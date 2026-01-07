@@ -488,7 +488,7 @@ docker compose up
   <a href="https://twitter.com/USERNAME">
     <img src="https://img.shields.io/badge/Twitter-1DA1F2?style=flat-square&logo=twitter&logoColor=white"/>
   </a>
-  <a href="https://instagram.com/USERNAME">
+  <a href="https://instagram.com/lelekuningcoy">
     <img src="https://img.shields.io/badge/Instagram-E4405F?style=flat-square&logo=instagram&logoColor=white"/>
   </a>
   <a href="https://facebook.com/USERNAME">
