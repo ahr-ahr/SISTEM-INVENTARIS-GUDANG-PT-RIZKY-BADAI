@@ -67,72 +67,65 @@ Docker dipakai biar semua developer jalan di setup yang sama, tanpa drama.
 
 ---
 
-## Arsitektur Sistem
+## Arsitektur Sistem (Animated)
 
 <div align="center">
 
-<svg width="760" height="300" viewBox="0 0 760 300"
-     xmlns="http://www.w3.org/2000/svg">
+<svg width="760" height="300" viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .box {
+      fill:#0b1220;
+      stroke:#6366F1;
+      stroke-width:2;
+      rx:12;
+    }
+    .text {
+      fill:#E5E7EB;
+      font-size:14px;
+      font-family:Inter, Arial, Helvetica, sans-serif;
+    }
+    .arrow {
+      stroke:#9CA3AF;
+      stroke-width:2;
+      fill:none;
+      stroke-dasharray:6;
+      animation: dash 2s linear infinite;
+      marker-end:url(#arrowhead);
+    }
+    @keyframes dash {
+      to { stroke-dashoffset: -12; }
+    }
+    .subtitle {
+      fill:#9CA3AF;
+      font-size:12px;
+    }
+  </style>
 
-  <!-- Arrow head -->
   <defs>
-    <marker id="arrowhead" markerWidth="10" markerHeight="7"
-            refX="10" refY="3.5" orient="auto">
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
       <polygon points="0 0, 10 3.5, 0 7" fill="#9CA3AF"/>
     </marker>
   </defs>
 
-  <!-- Frontend -->
-  <rect x="40" y="110" width="200" height="80" rx="12"
-        fill="#0b1220" stroke="#6366F1" stroke-width="2"/>
-  <text x="105" y="145" fill="#E5E7EB" font-size="14"
-        font-family="Arial, Helvetica, sans-serif">
-    Frontend
-  </text>
-  <text x="120" y="165" fill="#9CA3AF" font-size="12"
-        font-family="Arial, Helvetica, sans-serif">
-    React
-  </text>
+  <rect x="40" y="110" width="200" height="80" class="box"/>
+  <text x="105" y="145" class="text">Frontend</text>
+  <text x="120" y="165" class="subtitle">React</text>
 
-  <!-- Backend -->
-  <rect x="280" y="110" width="200" height="80" rx="12"
-        fill="#0b1220" stroke="#6366F1" stroke-width="2"/>
-  <text x="350" y="145" fill="#E5E7EB" font-size="14"
-        font-family="Arial, Helvetica, sans-serif">
-    Backend
-  </text>
-  <text x="335" y="165" fill="#9CA3AF" font-size="12"
-        font-family="Arial, Helvetica, sans-serif">
-    Laravel REST API
-  </text>
+  <rect x="280" y="110" width="200" height="80" class="box"/>
+  <text x="350" y="145" class="text">Backend</text>
+  <text x="335" y="165" class="subtitle">Laravel REST API</text>
 
-  <!-- Database -->
-  <rect x="520" y="110" width="200" height="80" rx="12"
-        fill="#0b1220" stroke="#6366F1" stroke-width="2"/>
-  <text x="585" y="145" fill="#E5E7EB" font-size="14"
-        font-family="Arial, Helvetica, sans-serif">
-    Database
-  </text>
-  <text x="590" y="165" fill="#9CA3AF" font-size="12"
-        font-family="Arial, Helvetica, sans-serif">
-    MySQL 8
-  </text>
+  <rect x="520" y="110" width="200" height="80" class="box"/>
+  <text x="585" y="145" class="text">Database</text>
+  <text x="590" y="165" class="subtitle">MySQL 8</text>
 
-  <!-- Arrows -->
-  <line x1="240" y1="150" x2="280" y2="150"
-        stroke="#9CA3AF" stroke-width="2"
-        marker-end="url(#arrowhead)"/>
-
-  <line x1="480" y1="150" x2="520" y2="150"
-        stroke="#9CA3AF" stroke-width="2"
-        marker-end="url(#arrowhead)"/>
-
+  <path d="M240 150 H280" class="arrow"/>
+  <path d="M480 150 H520" class="arrow"/>
 </svg>
 
 </div>
 
-Frontend manggil backend lewat REST API,  
-backend ngurus data ke database.  
+Frontend manggil backend lewat REST API, lalu backend ngurus data ke database.
 Semua service dijalankan di satu environment Docker.
 
 ---
@@ -537,12 +530,6 @@ docker compose up
 </a>
 
 </div>
-
-Oke, berarti yang kamu mau **bukan ganti kata**, tapi **ganti TAMPILAN** 🔥
-Kita bikin **Catatan & License kelihatan “designed”**, ada **badge + visual**, tetap **ringan & aman di GitHub**, dan **selaras sama section lain**.
-
-Di bawah ini **VERSI FINAL (DESIGN MODE)**
-👉 **FULL REPLACE untuk `## Catatan` & `## License`**
 
 ---
 
