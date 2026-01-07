@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  backend:
+    #build: ./backend
+    image: composer
+    container_name: sistem_inventaris_gudang_pt_rizky_badai_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/var/www
+    working_dir: /var/www
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    depends_on:
+      - db
+
+  frontend:
+    #build: ./frontend
+    image: node:24
+    container_name: sistem_inventaris_gudang_pt_rizky_badai_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+    working_dir: /app
+    command: npm run dev -- --host
+
+  db:
+    image: mysql:8.4
+    container_name: sistem_inventaris_gudang_pt_rizky_badai_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: sistem_inventaris_gudang_pt_rizky_badai_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: uprakkik
+      MYSQL_PASSWORD: uprakkik
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata:
