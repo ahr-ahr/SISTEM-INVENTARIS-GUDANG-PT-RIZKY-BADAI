@@ -208,86 +208,99 @@ Semua service dijalankan di satu environment Docker.
 
 ## Getting Started
 
-Semua yang kamu butuhin buat jalanin project ini ada di bawah.
-Kalau poin-poin ini aman, project bisa langsung gas tanpa drama.
-
-### Prasyarat
-
-<table>
-  <tr>
-    <td><strong>Git</strong></td>
-    <td>buat clone repo & ngatur versi kode</td>
-  </tr>
-  <tr>
-    <td><strong>Docker</strong></td>
-    <td>biar environment backend & frontend konsisten di semua device</td>
-  </tr>
-  <tr>
-    <td><strong>Docker Compose</strong></td>
-    <td>buat ngejalanin semua service sekaligus dengan satu perintah</td>
-  </tr>
-</table>
-
-> Catatan:
-> Kalau Docker udah ke-install, biasanya Docker Compose otomatis ikut.
+Project ini sudah dikonfigurasi menggunakan **Docker**, jadi kamu **tidak perlu menginstall PHP, Node, atau MySQL secara manual**.  
+Cukup install Docker, lalu ikuti langkah-langkah di bawah.
 
 ---
 
-### Quick Check
+## Requirements
 
-Pastikan semuanya udah siap sebelum lanjut:
+- Git
+- Docker
+- Docker Compose
 
-```
+### Environment Check
+
+```bash
 git --version
 docker --version
 docker compose version
-```
-
-Kalau semua command di atas jalan tanpa error, berarti environment kamu aman.
+````
 
 ---
 
-### Clone Repo
+## Clone Repository
 
-```
+```bash
 git clone https://github.com/USERNAME/sistem-inventaris-gudang-pt-rizky-badai.git
 cd sistem-inventaris-gudang-pt-rizky-badai
 ```
 
 ---
 
-### Install Dependency Frontend
+## Initial Setup
 
-```
-docker run --rm \
-  -v "$(pwd)/frontend:/app" \
-  -w /app \
-  node:24 \
-  npm install
+### Copy environment file
+
+```bash
+cp backend/.env.example backend/.env
 ```
 
-### Install Dependency Backend
+Windows (PowerShell):
 
-```
-docker run --rm \
-  -p 8000:8000 \
-  -v "$(pwd)/backend:/var/www" \
-  -w /var/www \
-  composer \
-  composer install
+```powershell
+copy backend\.env.example backend\.env
 ```
 
 ---
 
-### Jalanin Project
+## Build and Run Containers
 
+```bash
+docker compose up -d --build
 ```
-docker compose up
+
+Tunggu sampai semua container selesai build dan running.
+
+---
+
+## Install Dependencies
+
+### Backend (Laravel)
+
+```bash
+docker exec -it sistem_inventaris_gudang_pt_rizky_badai_backend composer install
+```
+
+> Pastikan container backend sudah memiliki composer di dalamnya.
+
+---
+
+### Generate Application Key
+
+```bash
+docker exec -it sistem_inventaris_gudang_pt_rizky_badai_backend php artisan key:generate
 ```
 
 ---
 
-### Akses Lokal
+### Run Database Migration
+
+```bash
+docker exec -it sistem_inventaris_gudang_pt_rizky_badai_backend php artisan migrate:fresh
+```
+
+---
+
+### Frontend (React)
+
+```bash
+docker exec -it sistem_inventaris_gudang_pt_rizky_badai_frontend npm install
+```
+
+---
+
+## Access from Browser
 
 | Service     | URL                                            |
 | ----------- | ---------------------------------------------- |
@@ -295,6 +308,41 @@ docker compose up
 | Frontend    | [http://localhost:5173](http://localhost:5173) |
 
 ---
+
+## Stop Containers
+
+```bash
+docker compose down
+```
+
+---
+
+## Notes
+
+* No need to install PHP, Node, or MySQL manually
+* All environments are managed by Docker
+* All team members use the same environment setup
+
+---
+
+## Troubleshooting
+
+If something goes wrong:
+
+```bash
+docker compose down -v
+docker compose build --no-cache
+docker compose up -d
+```
+
+---
+
+## Done
+
+If all steps above run successfully, the project is ready to use.
+
+---
+
 ## GitHub Stats
 
 <div align="center">

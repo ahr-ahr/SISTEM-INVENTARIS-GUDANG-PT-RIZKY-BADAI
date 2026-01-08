@@ -2,8 +2,8 @@ version: "3.9"
 
 services:
   backend:
-    #build: ./backend
-    image: composer
+    build: ./backend
+    #image: composer
     container_name: sistem_inventaris_gudang_pt_rizky_badai_backend
     ports:
       - "8000:8000"
@@ -15,13 +15,14 @@ services:
       - db
 
   frontend:
-    #build: ./frontend
-    image: node:24
+    build: ./frontend
+    #image: node:24
     container_name: sistem_inventaris_gudang_pt_rizky_badai_frontend
     ports:
       - "5173:5173"
     volumes:
       - ./frontend:/app
+      - /app/node_modules
     working_dir: /app
     command: npm run dev -- --host
 
