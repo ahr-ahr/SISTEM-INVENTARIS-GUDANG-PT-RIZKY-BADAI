@@ -14,7 +14,7 @@ class AuthService
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'username' => ['Username atau password salah'],
+                'credentials' => ['Username atau password salah'],
             ]);
         }
 

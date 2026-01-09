@@ -13,6 +13,7 @@ services:
     command: sh -c "composer install && php artisan serve --host=0.0.0.0 --port=8000"
     depends_on:
       - db
+      - redis
 
   frontend:
     image: node:24
@@ -39,7 +40,17 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
 
+  redis:
+    image: redis:latest
+    container_name: sistem_inventaris_gudang_pt_rizky_badai_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+
 volumes:
   dbdata:
   node_modules:
   vendor:
+  redisdata:

@@ -3,24 +3,30 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
-class UserResource extends JsonResource
+class UserResource extends BaseApiResource
 {
     public function toArray(Request $request): array
     {
         return [
-            'id'            => $this->id,
-            'username'      => $this->username,
-            'role'          => [
-                'id'   => $this->role->id,
-                'name' => $this->role->name,
-            ],
-            'employee'      => $this->employee ? [
-                'id'   => $this->employee->id,
-                'nama' => $this->employee->nama_lengkap,
-            ] : null,
-            'last_login_at' => $this->last_login_at,
+            'id'       => $this->int($this->id),
+            'username' => $this->username,
+
+            'role' => $this->whenLoaded('role', function () {
+                return [
+                    'id'   => $this->int($this->role->id),
+                    'name' => $this->role->name,
+                ];
+            }),
+
+            'employee' => $this->whenLoaded('employee', function () {
+                return [
+                    'id'   => $this->int($this->employee->id),
+                    'nama' => $this->employee->nama_lengkap,
+                ];
+            }),
+
+            'last_login_at' => $this->isoDate($this->last_login_at),
         ];
     }
 }
