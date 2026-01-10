@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Performance;
 
 use Tests\TestCase;
 use App\Models\User;
@@ -8,7 +8,7 @@ use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 
-class AuthLoginTest extends TestCase
+class AuthLoginStressTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -29,23 +29,18 @@ class AuthLoginTest extends TestCase
         ]);
     }
 
-    public function test_user_can_login()
+    public function test_login_is_rate_limited_under_load()
     {
-        $response = $this->postJson('/api/login', [
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/login', [
+                'username' => 'superadmin',
+                'password' => 'password',
+            ])->assertSuccessful();
+        }
+
+        $this->postJson('/api/login', [
             'username' => 'superadmin',
             'password' => 'password',
-        ]);
-
-        $response->assertOk();
-    }
-
-    public function test_login_fails_with_wrong_password()
-    {
-        $response = $this->postJson('/api/login', [
-            'username' => 'superadmin',
-            'password' => 'salah',
-        ]);
-
-        $response->assertOk();
+        ])->assertStatus(429);
     }
 }

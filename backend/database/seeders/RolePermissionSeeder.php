@@ -3,44 +3,123 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Role;
+use App\Models\Permission;
 
 class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        $roles = DB::table('roles')->pluck('id', 'name');
-        $permissions = DB::table('permissions')->pluck('id', 'name');
+        // Ambil role
+        $superAdmin = Role::where('name', 'super_admin')->first();
+        $admin      = Role::where('name', 'admin')->first();
+        $kepala     = Role::where('name', 'kepala_gudang')->first();
+        $staff      = Role::where('name', 'staff_gudang')->first();
+        $qc         = Role::where('name', 'petugas_qc')->first();
+        $bongkar    = Role::where('name', 'petugas_bongkar_muat')->first();
+        $scm        = Role::where('name', 'supply_chain_supervisor')->first();
+        $timbang    = Role::where('name', 'petugas_rekap_timbang')->first();
 
-        // Super Admin = semua permission
-        foreach ($permissions as $permissionId) {
-            DB::table('role_permissions')->insert([
-                'role_id' => $roles['super_admin'],
-                'permission_id' => $permissionId,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        // Ambil semua permission (untuk super admin)
+        $allPermissions = Permission::pluck('id')->toArray();
 
-        // Admin
-        $adminPermissions = [
-            'input_barang',
-            'edit_barang',
-            'hapus_barang',
-            'approve_barang',
-            'lihat_laporan',
-            'rekap_timbang',
-        ];
+        /*
+        |--------------------------------------------------------------------------
+        | SUPER ADMIN (DEV)
+        |--------------------------------------------------------------------------
+        */
+        $superAdmin?->permissions()->sync($allPermissions);
 
-        foreach ($adminPermissions as $p) {
-            DB::table('role_permissions')->insert([
-                'role_id' => $roles['admin'],
-                'permission_id' => $permissions[$p],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        /*
+        |--------------------------------------------------------------------------
+        | ADMIN
+        |--------------------------------------------------------------------------
+        */
+        $admin?->permissions()->sync(
+            Permission::whereIn('name', [
+                'view_barang',
+                'create_barang',
+                'update_barang',
+                'delete_barang',
+                'barang_masuk',
+                'barang_keluar',
+                'approve_stok',
+                'view_laporan',
+            ])->pluck('id')->toArray()
+        );
 
-        // Role lain bisa ditambah nanti
+        /*
+        |--------------------------------------------------------------------------
+        | KEPALA GUDANG
+        |--------------------------------------------------------------------------
+        */
+        $kepala?->permissions()->sync(
+            Permission::whereIn('name', [
+                'view_barang',
+                'approve_stok',
+                'view_laporan',
+            ])->pluck('id')->toArray()
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | STAFF GUDANG
+        |--------------------------------------------------------------------------
+        */
+        $staff?->permissions()->sync(
+            Permission::whereIn('name', [
+                'view_barang',
+                'barang_masuk',
+                'barang_keluar',
+            ])->pluck('id')->toArray()
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | PETUGAS QC
+        |--------------------------------------------------------------------------
+        */
+        $qc?->permissions()->sync(
+            Permission::whereIn('name', [
+                'view_barang',
+                'qc_check',
+            ])->pluck('id')->toArray()
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | PETUGAS BONGKAR MUAT
+        |--------------------------------------------------------------------------
+        */
+        $bongkar?->permissions()->sync(
+            Permission::whereIn('name', [
+                'view_barang',
+            ])->pluck('id')->toArray()
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | SUPPLY CHAIN SUPERVISOR
+        |--------------------------------------------------------------------------
+        */
+        $scm?->permissions()->sync(
+            Permission::whereIn('name', [
+                'view_barang',
+                'approve_stok',
+                'view_laporan',
+            ])->pluck('id')->toArray()
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | PETUGAS REKAP TIMBANG
+        |--------------------------------------------------------------------------
+        */
+        $timbang?->permissions()->sync(
+            Permission::whereIn('name', [
+                'view_barang',
+                'rekap_timbang',
+            ])->pluck('id')->toArray()
+        );
     }
 }

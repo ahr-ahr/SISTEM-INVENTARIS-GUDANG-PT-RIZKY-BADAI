@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Http\RateLimiters\LoginRateLimiter;
+use App\Http\RateLimiters\InternalApiRateLimiter;
+use App\Http\RateLimiters\SensitiveActionRateLimiter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        LoginRateLimiter::register();
+        InternalApiRateLimiter::register();
+        SensitiveActionRateLimiter::register();
     }
 }
