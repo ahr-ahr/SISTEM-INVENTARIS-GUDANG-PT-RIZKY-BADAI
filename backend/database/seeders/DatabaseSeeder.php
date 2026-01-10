@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             EmployeeSeeder::class,
             UserSeeder::class,
+
+            BarangSeeder::class,
         ]);
     }
 }

@@ -1,16 +1,23 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BarangController;
+use App\Http\Controllers\Inventory\BarangController;
+use App\Enums\BarangDeactivationReason;
 
-Route::post('/login', [AuthController::class, 'login'])
-    ->middleware('throttle:login');
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/items', [BarangController::class, 'index'])->middleware('throttle:login');
+Route::prefix('v1')->group(function () {
 
-    /**Route::middleware('permission:inventory.view')
-        ->get('/inventory', ...);*/
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:login');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+
+        Route::prefix('inventory')->group(function () {
+
+            Route::get('barangs/deactivation-reasons',[BarangController::class, 'deactivationReasons']);
+            Route::get('barangs/inactive', [BarangController::class, 'inactive']);
+            Route::apiResource('barangs', BarangController::class);
+        });
+    });
 });
