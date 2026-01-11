@@ -70,6 +70,7 @@ class BarangController extends Controller
             'success' => true,
             'message' => HttpMessage::fromStatus(HttpStatus::CREATED),
             'data' => new BarangResource($barang),
+            'meta' => ApiMeta::withTimestamp(),
         ], HttpStatus::CREATED);
     }
 
@@ -81,6 +82,7 @@ class BarangController extends Controller
             'success' => true,
             'message' => HttpMessage::fromStatus(HttpStatus::OK),
             'data' => new BarangResource($barang),
+            'meta' => ApiMeta::withTimestamp(),
         ], HttpStatus::OK);
     }
 
@@ -96,6 +98,7 @@ class BarangController extends Controller
             'success' => true,
             'message' => HttpMessage::fromStatus(HttpStatus::OK),
             'data' => new BarangResource($barang),
+            'meta' => ApiMeta::withTimestamp(),
         ], HttpStatus::OK);
     }
 }
