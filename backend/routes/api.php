@@ -6,6 +6,7 @@ use App\Http\Controllers\Inventory\BarangController;
 use App\Enums\BarangDeactivationReason;
 use App\Http\Controllers\Inventory\PenerimaanController;
 use App\Http\Controllers\Inventory\PengeluaranController;
+use App\Http\Controllers\Inventory\Report\LaporanMutasiStokController;
 
 Route::prefix('v1')->group(function () {
 
@@ -25,6 +26,8 @@ Route::prefix('v1')->group(function () {
 
                 Route::post('penerimaan', [PenerimaanController::class, 'store']);
                 Route::post('pengeluaran', [PengeluaranController::class, 'store']);
+
+                Route::get('laporan/mutasi-stok', [LaporanMutasiStokController::class, 'index']);
             });
     });
 });
