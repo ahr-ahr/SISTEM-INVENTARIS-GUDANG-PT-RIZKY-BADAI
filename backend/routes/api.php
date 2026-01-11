@@ -8,6 +8,7 @@ use App\Http\Controllers\Inventory\PenerimaanController;
 use App\Http\Controllers\Inventory\PengeluaranController;
 use App\Http\Controllers\Inventory\Report\LaporanMutasiStokController;
 use App\Http\Controllers\Inventory\Report\LaporanStokController;
+use App\Http\Controllers\Inventory\Alert\StokMinimumController;
 
 Route::prefix('v1')->group(function () {
 
@@ -20,7 +21,6 @@ Route::prefix('v1')->group(function () {
         Route::prefix('inventory')
             ->middleware('throttle:internal-api')
             ->group(function () {
-
                 Route::get('barangs/deactivation-reasons', [BarangController::class, 'deactivationReasons']);
                 Route::get('barangs/inactive', [BarangController::class, 'inactive']);
                 Route::apiResource('barangs', BarangController::class);
@@ -30,6 +30,7 @@ Route::prefix('v1')->group(function () {
 
                 Route::get('laporan/mutasi-stok', [LaporanMutasiStokController::class, 'index']);
                 Route::get('laporan/stok', [LaporanStokController::class, 'index']);
+                Route::get('alert/stok-minimum', [StokMinimumController::class, 'index']);
             });
     });
 });
