@@ -11,6 +11,7 @@ use App\Http\Controllers\Inventory\Report\LaporanStokController;
 use App\Http\Controllers\Inventory\Alert\StokMinimumController;
 use App\Http\Controllers\Inventory\Adjustment\StockAdjustmentController;
 use App\Http\Controllers\Inventory\Category\CategoryController;
+use App\Http\Controllers\Inventory\Supplier\SupplierController;
 
 Route::prefix('v1')->group(function () {
 
@@ -24,6 +25,7 @@ Route::prefix('v1')->group(function () {
             ->middleware('throttle:internal-api')
             ->group(function () {
                 Route::apiResource('categories', CategoryController::class)->except(['show']);
+                Route::apiResource('suppliers', SupplierController::class)->except(['show']);
                 Route::get('barangs/deactivation-reasons', [BarangController::class, 'deactivationReasons']);
                 Route::get('barangs/inactive', [BarangController::class, 'inactive']);
                 Route::apiResource('barangs', BarangController::class);
