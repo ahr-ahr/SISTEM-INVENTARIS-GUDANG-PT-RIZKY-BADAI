@@ -9,6 +9,7 @@ use App\Http\Controllers\Inventory\PengeluaranController;
 use App\Http\Controllers\Inventory\Report\LaporanMutasiStokController;
 use App\Http\Controllers\Inventory\Report\LaporanStokController;
 use App\Http\Controllers\Inventory\Alert\StokMinimumController;
+use App\Http\Controllers\Inventory\Adjustment\StockAdjustmentController;
 
 Route::prefix('v1')->group(function () {
 
@@ -31,6 +32,7 @@ Route::prefix('v1')->group(function () {
                 Route::get('laporan/mutasi-stok', [LaporanMutasiStokController::class, 'index']);
                 Route::get('laporan/stok', [LaporanStokController::class, 'index']);
                 Route::get('alert/stok-minimum', [StokMinimumController::class, 'index']);
+                Route::post('adjustment', [StockAdjustmentController::class, 'store']);
             });
     });
 });
