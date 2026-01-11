@@ -8,7 +8,7 @@ use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 
-class AuthLoginStressTest extends TestCase
+class AuthLoginRateLimitTest extends TestCase
 {
     use RefreshDatabase;
 
