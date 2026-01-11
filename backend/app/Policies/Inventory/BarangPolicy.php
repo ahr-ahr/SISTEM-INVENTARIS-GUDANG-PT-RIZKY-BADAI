@@ -30,9 +30,6 @@ class BarangPolicy
 
     public function delete(User $user, Barang $barang): bool
     {
-        if ($barang->stok > 0) {
-            return false;
-        }
 
         return $user->canDo(PermissionEnum::DELETE_BARANG->value);
     }

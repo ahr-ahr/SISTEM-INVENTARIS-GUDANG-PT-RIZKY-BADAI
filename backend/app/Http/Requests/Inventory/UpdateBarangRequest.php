@@ -18,8 +18,10 @@ class UpdateBarangRequest extends FormRequest
     {
         return [
             'nama'         => 'sometimes|required|string',
+            'kode'         => 'sometimes|required|string|unique:barangs,kode,' . $this->route('barang')->id,
             'kategori'     => 'nullable|string',
             'satuan'       => 'sometimes|required|string',
+            'stok'         => 'nullable|integer|min:0',
             'stok_minimum' => 'nullable|integer|min:0',
             'deskripsi'    => 'nullable|string',
             'is_active'    => 'boolean',

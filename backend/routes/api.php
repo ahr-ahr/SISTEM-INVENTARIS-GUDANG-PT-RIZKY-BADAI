@@ -13,11 +13,13 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
 
-        Route::prefix('inventory')->group(function () {
+        Route::prefix('inventory')
+            ->middleware('throttle:internal-api')
+            ->group(function () {
 
-            Route::get('barangs/deactivation-reasons',[BarangController::class, 'deactivationReasons']);
-            Route::get('barangs/inactive', [BarangController::class, 'inactive']);
-            Route::apiResource('barangs', BarangController::class);
-        });
+                Route::get('barangs/deactivation-reasons', [BarangController::class, 'deactivationReasons']);
+                Route::get('barangs/inactive', [BarangController::class, 'inactive']);
+                Route::apiResource('barangs', BarangController::class);
+            });
     });
 });
