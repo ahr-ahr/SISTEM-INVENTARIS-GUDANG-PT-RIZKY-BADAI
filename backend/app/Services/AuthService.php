@@ -9,30 +9,32 @@ use Illuminate\Validation\ValidationException;
 class AuthService
 {
     public function login(array $credentials): array
-    {
-        $user = User::where('username', $credentials['username'])->first();
+{
+    $user = User::where('username', $credentials['username'])->first();
 
-        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'credentials' => ['Username atau password salah'],
-            ]);
-        }
-
-        if (! $user->is_active) {
-            throw ValidationException::withMessages([
-                'username' => ['Akun tidak aktif'],
-            ]);
-        }
-
-        $user->update([
-            'last_login_at' => now(),
+    if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+        throw ValidationException::withMessages([
+            'credentials' => ['Username atau password salah'],
         ]);
-
-        return [
-            'user'  => $user,
-            'token' => $user->createToken('auth-token')->plainTextToken,
-        ];
     }
+
+    if (! $user->is_active) {
+        throw ValidationException::withMessages([
+            'username' => ['Akun tidak aktif'],
+        ]);
+    }
+
+    $user->update([
+        'last_login_at' => now(),
+    ]);
+
+    $user->load(['role', 'employee']);
+
+    return [
+        'user'  => $user,
+        'token' => $user->createToken('auth-token')->plainTextToken,
+    ];
+}
 
     public function logout(User $user): void
     {
