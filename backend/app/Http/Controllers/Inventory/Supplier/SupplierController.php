@@ -36,6 +36,7 @@ class SupplierController extends Controller
             'success' => true,
             'message' => HttpMessage::fromStatus(HttpStatus::CREATED),
             'data'    => new SupplierResource($supplier),
+            'meta'    => ApiMeta::withTimestamp(),
         ], HttpStatus::CREATED);
     }
 
@@ -47,6 +48,7 @@ class SupplierController extends Controller
             'success' => true,
             'message' => HttpMessage::fromStatus(HttpStatus::OK),
             'data'    => new SupplierResource($supplier),
+            'meta'    => ApiMeta::withTimestamp(),
         ], HttpStatus::OK);
     }
 
@@ -59,6 +61,8 @@ class SupplierController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Supplier berhasil dinonaktifkan',
+            'data'    => new SupplierResource($supplier),
+            'meta'    => ApiMeta::withTimestamp(),
         ], HttpStatus::OK);
     }
 }
