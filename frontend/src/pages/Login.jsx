@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function App() {
+  const navigate = useNavigate(); // TAMBAHKAN INI
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -21,6 +23,7 @@ export default function App() {
     setParticles(newParticles);
   }, []);
 
+  // UBAH FUNCTION INI
   const handleSubmit = async () => {
     setError('');
 
@@ -56,19 +59,16 @@ export default function App() {
             user: data.data?.user || {}
           };
 
-          const username = data.data?.user?.username || 'User';
-          const roleName = data.data?.user?.role?.name || 'Unknown';
-          const employeeName = data.data?.user?.employee?.nama || 'Unknown';
+          // Simpan token ke localStorage
+          localStorage.setItem('token', userData.token);
+          localStorage.setItem('user', JSON.stringify(userData.user));
 
-          alert(`Login Berhasil! ✅\n\nSelamat datang, ${username}\nRole: ${roleName}\nNama: ${employeeName}`);
-          
-          console.log('User Data:', userData);
-          console.log('Token:', userData.token);
-          console.log('Full Response:', data);
-          
-          setUsername('');
-          setPassword('');
-          setError('');
+          // Redirect ke dashboard
+          navigate('/dashboard', { 
+            state: { 
+              user: userData 
+            } 
+          });
           
         } else {
           setError(data.message || 'Login gagal. Periksa username dan password Anda.');
