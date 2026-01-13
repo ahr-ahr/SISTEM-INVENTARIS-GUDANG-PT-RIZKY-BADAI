@@ -5,12 +5,18 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/etc/traefik/dynamic"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
       - "--log.level=DEBUG"
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - ./traefik/certs:/etc/traefik/certs:ro
   # backend:
   #   build: ./backend
   #   #image: composer
@@ -38,13 +44,16 @@ services:
       - redis
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=PathPrefix(`/api`) || PathPrefix(`/docs`)"
-      - "traefik.http.routers.backend.entrypoints=web"
-      - "traefik.http.routers.backend.priority=100"
+      - "traefik.http.routers.backend.rule=Host(`api.sig-pt-rizky-badai.com`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      - "traefik.http.routers.backend.middlewares=api-limit"
+      - "traefik.http.routers.backend-http.rule=Host(`api.sig-pt-rizky-badai.com`)"
+      - "traefik.http.routers.backend-http.entrypoints=web"
+      - "traefik.http.routers.backend-http.middlewares=redirect-https"
       - "traefik.http.middlewares.api-limit.ratelimit.average=20"
       - "traefik.http.middlewares.api-limit.ratelimit.burst=40"
-      - "traefik.http.routers.backend.middlewares=api-limit"
 
   frontend:
     image: node:24
@@ -56,10 +65,14 @@ services:
     command: sh -c "npm install && npm run dev -- --host"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.frontend.entrypoints=web"
-      - "traefik.http.routers.frontend.priority=1"
+      - "traefik.http.routers.frontend-secure.rule=Host(`sig-pt-rizky-badai.com`)"
+      - "traefik.http.routers.frontend-secure.entrypoints=websecure"
+      - "traefik.http.routers.frontend-secure.tls=true"
       - "traefik.http.services.frontend.loadbalancer.server.port=5173"
+      - "traefik.http.routers.frontend.rule=Host(`sig-pt-rizky-badai.com`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.middlewares=redirect-https"
+      - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
   # frontend:
   #   image: node:24
   #   container_name: sistem_inventaris_gudang_pt_rizky_badai_frontend
