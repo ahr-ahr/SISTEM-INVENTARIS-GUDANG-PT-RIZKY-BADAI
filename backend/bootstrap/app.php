@@ -6,6 +6,8 @@ use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\HandleCors;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use App\Http\Middleware\ForceJsonResponse;
+use App\Http\Middleware\DecryptRequest;
+use App\Http\Middleware\EncryptResponse;
 use Illuminate\Http\Request;
 use App\Exceptions\Handler;
 
@@ -25,6 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             EnsureFrontendRequestsAreStateful::class,
             ForceJsonResponse::class,
+            DecryptRequest::class,
+            EncryptResponse::class,
         ]);
 
         /**
