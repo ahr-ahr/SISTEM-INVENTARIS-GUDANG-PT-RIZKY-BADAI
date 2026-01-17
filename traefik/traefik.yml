@@ -10,5 +10,9 @@ providers:
   file:
     directory: /etc/traefik/dynamic
 
+api:
+  dashboard: true
+  insecure: false
+
 log:
   level: DEBUG

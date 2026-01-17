@@ -4,13 +4,6 @@ services:
     container_name: sistem_inventaris_gudang_pt_rizky_badai_traefik
     command:
       - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.file.directory=/etc/traefik/dynamic"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--api.dashboard=true"
-      - "--api.insecure=false"
-      - "--log.level=DEBUG"
     ports:
       - "80:80"
       - "443:443"
@@ -21,12 +14,12 @@ services:
       - ./traefik/certs:/etc/traefik/certs:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.sig-pt-rizky-badai.com`) && (`sig-pt-rizky-badai.com`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.tls=true"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.middlewares.dashboard-strip.stripprefix.prefixes=/dashboard"
-      - "traefik.http.routers.traefik.middlewares=dashboard-strip"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.sig-pt-rizky-badai.com`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=dashboard-auth"
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=admin:$$apr1$$ifZp4DOp$$t7BuoRRXsJiJDfvN/VNMW/"
   # backend:
   #   build: ./backend
   #   #image: composer
