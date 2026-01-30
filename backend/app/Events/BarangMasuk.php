@@ -3,19 +3,21 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
-class BarangMasuk implements ShouldBroadcast
+class BarangMasuk implements ShouldBroadcastNow
 {
     use SerializesModels;
 
-    public function __construct(
-        public array $data
-    ) {}
+    public function __construct(public array $data)
+    {
+        Log::info('EVENT BarangMasuk CREATED', $data);
+    }
 
     /**
-     * Channel yang di-listen React
+     * Channel publik yang didengarkan React
      */
     public function broadcastOn(): Channel
     {
@@ -23,7 +25,7 @@ class BarangMasuk implements ShouldBroadcast
     }
 
     /**
-     * Nama event (HARUS cocok dengan React)
+     * Nama event (harus cocok dengan .listen())
      */
     public function broadcastAs(): string
     {

@@ -4,15 +4,16 @@ import Pusher from 'pusher-js'
 window.Pusher = Pusher
 
 const echo = new Echo({
-  broadcaster: 'reverb',
+  broadcaster: import.meta.env.VITE_BROADCASTER,
   key: import.meta.env.VITE_REVERB_APP_KEY,
 
-  wsHost: import.meta.env.VITE_REVERB_HOST,
-  wsPort: import.meta.env.VITE_REVERB_PORT,
-  wssPort: import.meta.env.VITE_REVERB_PORT,
+  wsHost: 'reverb.sig-pt-rizky-badai.com',
 
   forceTLS: import.meta.env.VITE_REVERB_SCHEME === 'https',
-  enabledTransports: ['ws', 'wss'],
+  encrypted: true,
+  enabledTransports: ['wss'],
+  disableStats: true,
+  cluster: '',
 })
 
 export default echo
