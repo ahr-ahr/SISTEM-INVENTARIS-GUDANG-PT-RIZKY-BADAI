@@ -13,8 +13,18 @@ use App\Http\Controllers\Inventory\Adjustment\StockAdjustmentController;
 use App\Http\Controllers\Inventory\Category\CategoryController;
 use App\Http\Controllers\Inventory\Supplier\SupplierController;
 use App\Http\Controllers\Inventory\Receiving\ReceivingController;
+use App\Events\BarangMasuk;
 
 Route::prefix('v1')->group(function () {
+Route::get('/test-realtime', function () {
+    broadcast(new BarangMasuk([
+        'kode' => 'BRG-001',
+        'nama' => 'Baut Baja',
+        'qty'  => 10,
+    ]));
+
+    return 'Event BarangMasuk dikirim';
+});
 
     Route::post('/login', [AuthController::class, 'login'])
         ->middleware('throttle:login');

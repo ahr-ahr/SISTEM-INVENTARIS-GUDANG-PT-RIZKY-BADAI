@@ -58,6 +58,11 @@ services:
       - "traefik.http.middlewares.api-limit.ratelimit.average=20"
       - "traefik.http.middlewares.api-limit.ratelimit.burst=40"
 
+      - "traefik.http.routers.reverb.rule=Host(`reverb.sig-pt-rizky-badai.com`)"
+      - "traefik.http.routers.reverb.entrypoints=websecure"
+      - "traefik.http.routers.reverb.tls=true"
+      - "traefik.http.services.reverb.loadbalancer.server.port=3030"
+
   frontend:
     image: node:24
     container_name: sistem_inventaris_gudang_pt_rizky_badai_frontend
@@ -124,8 +129,31 @@ services:
     volumes:
       - redisdata:/data
 
+  minio:
+    image: minio/minio:latest
+    container_name: sistem_inventaris_gudang_pt_rizky_badai_minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # MinIO Console
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - miniodata:/data
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: sistem_inventaris_gudang_pt_rizky_badai_mailpit
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    restart: unless-stopped
+
 volumes:
   dbdata:
   node_modules:
   vendor:
   redisdata:
+  miniodata:
