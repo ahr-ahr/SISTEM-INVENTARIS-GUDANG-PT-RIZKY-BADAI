@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function App() {
-  const navigate = useNavigate(); // TAMBAHKAN INI
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +23,7 @@ export default function App() {
     setParticles(newParticles);
   }, []);
 
-  // UBAH FUNCTION INI
+  // FUNCTION YANG SUDAH DIPERBAIKI UNTUK MENGATASI CSRF ERROR
   const handleSubmit = async () => {
     setError('');
 
@@ -35,12 +35,17 @@ export default function App() {
     setIsLoading(true);
     
     try {
+      // SOLUSI 1: Tambahkan credentials untuk mengirim cookies (termasuk CSRF token)
       const response = await fetch('https://api.sig-pt-rizky-badai.com:8443/api/v1/login', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+          // SOLUSI 2: Tambahkan header X-Requested-With untuk Laravel
+          'X-Requested-With': 'XMLHttpRequest',
         },
+        // SOLUSI 3: Kirim credentials (cookies) bersama request
+        credentials: 'include',
         body: JSON.stringify({
           username: username,
           password: password
@@ -73,12 +78,15 @@ export default function App() {
         } else {
           setError(data.message || 'Login gagal. Periksa username dan password Anda.');
         }
+      } else if (response.status === 419) {
+        // SOLUSI 4: Handling khusus untuk CSRF error
+        setError('Sesi keamanan berakhir. Silakan refresh halaman dan coba lagi.');
       } else {
         setError(data.message || `Error ${response.status}: Terjadi kesalahan pada server.`);
       }
     } catch (err) {
       console.error('Error Detail:', err);
-      setError('Terjadi kesalahan koneksi. Pastikan server berjalan di http://localhost:8000');
+      setError('Terjadi kesalahan koneksi. Pastikan server berjalan dengan baik.');
     } finally {
       setIsLoading(false);
     }
