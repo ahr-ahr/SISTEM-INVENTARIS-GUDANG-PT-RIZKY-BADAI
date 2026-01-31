@@ -2,17 +2,22 @@ import { useEffect } from 'react'
 import echo from '../lib/echo'
 
 export default function TestRealtime() {
-  console.log('TestRealtime component mounted');
-  
+
   useEffect(() => {
-    console.log('SUBSCRIBE barang')
+    console.log(import.meta.env.VITE_BROADCASTER)
+console.log(import.meta.env.VITE_REVERB_APP_KEY)
+console.log(import.meta.env.VITE_REVERB_HOST)
+console.log(import.meta.env.VITE_REVERB_SCHEME)
+  }, [])
+
+  useEffect(() => {
     echo.channel('barang')
-      .listen('BarangMasuk', (e) => {
-        console.log('REALTIME BARANG MASUK:', e)
+      .listen('.BarangMasuk', (e) => {
+        console.log('🔥 REALTIME BARANG MASUK:', e)
       })
 
     return () => {
-      echo.leaveChannel('barang')
+      echo.leave('barang')
     }
   }, [])
 

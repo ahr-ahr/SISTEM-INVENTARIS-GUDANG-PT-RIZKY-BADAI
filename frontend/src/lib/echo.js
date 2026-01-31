@@ -4,16 +4,22 @@ import Pusher from 'pusher-js'
 window.Pusher = Pusher
 
 const echo = new Echo({
-  broadcaster: import.meta.env.VITE_BROADCASTER,
-  key: import.meta.env.VITE_REVERB_APP_KEY,
+  broadcaster: 'reverb',
+  key: 'local',
 
   wsHost: 'reverb.sig-pt-rizky-badai.com',
 
-  forceTLS: import.meta.env.VITE_REVERB_SCHEME === 'https',
-  encrypted: true,
+  forceTLS: true,
+
   enabledTransports: ['wss'],
-  disableStats: true,
-  cluster: '',
+})
+
+echo.connector.pusher.connection.bind('connected', () => {
+  console.log('✅ REVERB CONNECTED')
+})
+
+echo.connector.pusher.connection.bind('error', (err) => {
+  console.error('❌ REVERB ERROR', err)
 })
 
 export default echo

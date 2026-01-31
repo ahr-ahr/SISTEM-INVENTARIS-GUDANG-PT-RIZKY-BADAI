@@ -23,7 +23,7 @@ services:
 
   backend:
     build: ./backend
-    container_name: backend
+    container_name: sistem_inventaris_gudang_pt_rizky_badai_backend
     volumes:
       - ./backend:/var/www
       - vendor:/var/www/vendor
@@ -57,7 +57,7 @@ services:
 
   reverb:
     build: ./backend
-    container_name: reverb
+    container_name: sistem_inventaris_gudang_pt_rizky_badai_reverb
     volumes: []
     working_dir: /var/www
     command: php artisan reverb:start --host=0.0.0.0 --port=3030
@@ -66,13 +66,12 @@ services:
     labels:
       - "traefik.enable=true"
 
-      - "traefik.http.routers.reverb-secure.rule=Host(`reverb.sig-pt-rizky-badai.com`) && PathPrefix(`/app`)"
+      - "traefik.http.routers.reverb-secure.rule=Host(`reverb.sig-pt-rizky-badai.com`)"
       - "traefik.http.routers.reverb-secure.entrypoints=websecure"
       - "traefik.http.routers.reverb-secure.tls=true"
       - "traefik.http.routers.reverb-secure.service=reverb"
 
       - "traefik.http.services.reverb.loadbalancer.server.port=3030"
-      - "traefik.http.services.reverb.loadbalancer.server.scheme=http"
       - "traefik.http.services.reverb.loadbalancer.serverstransport=reverb-transport@file"
 
       - "traefik.http.serverstransports.reverb-transport.disablehttp2=true"

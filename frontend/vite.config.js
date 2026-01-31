@@ -7,12 +7,23 @@ export default defineConfig({
     react(),
     tailwind(),
   ],
+
   server: {
     host: true,
+    strictPort: true,
     port: 5173,
+
+    https: false,
+
     allowedHosts: [
       'sig-pt-rizky-badai.com',
+      'reverb.sig-pt-rizky-badai.com',
       'localhost',
     ],
+
+    hmr: {
+      protocol: 'wss',
+      host: 'sig-pt-rizky-badai.com',
+    },
   },
 })

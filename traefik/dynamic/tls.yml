@@ -1,4 +1,4 @@
 tls:
   certificates:
-    - certFile: /etc/traefik/certs/sig-pt-rizky-badai.pem
-      keyFile: /etc/traefik/certs/sig-pt-rizky-badai-key.pem
+    - certFile: /etc/traefik/certs/sig-pt-rizky-badai.com.pem
+      keyFile: /etc/traefik/certs/sig-pt-rizky-badai.com-key.pem
