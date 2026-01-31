@@ -11,6 +11,9 @@ return [
 
     'allowed_origins' => [
         'http://localhost:5173',
+        'https://sig-pt-rizky-badai.com:8443',
+        'https://api.sig-pt-rizky-badai.com:8443',
+        'https://reverb.sig-pt-rizky-badai.com:8443',
     ],
 
     'allowed_origins_patterns' => [],
