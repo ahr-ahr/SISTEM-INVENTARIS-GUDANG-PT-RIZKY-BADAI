@@ -2,22 +2,26 @@ import { useState } from 'react'
 import { useReverbChannel } from '../hooks/useReverbChannel'
 
 export default function TestRealtime() {
-  const [messages, setMessages] = useState([])
+  const [alerts, setAlerts] = useState([])
 
   useReverbChannel(
-    'barang',
-    'BarangMasuk',
+    'inventory.alert',   // 🔥 channel
+    'stok.minimum',      // 🔥 event
     (data) => {
-      setMessages(prev => [...prev, data])
+      setAlerts(prev => [...prev, data])
     }
   )
 
   return (
     <div>
-      <h2>Realtime (Production)</h2>
+      <h2>Realtime Alert – Stok Minimum</h2>
 
-      {messages.map((m, i) => (
-        <pre key={i}>{JSON.stringify(m, null, 2)}</pre>
+      {alerts.length === 0 && (
+        <p>Belum ada alert</p>
+      )}
+
+      {alerts.map((a, i) => (
+        <pre key={i}>{JSON.stringify(a, null, 2)}</pre>
       ))}
     </div>
   )

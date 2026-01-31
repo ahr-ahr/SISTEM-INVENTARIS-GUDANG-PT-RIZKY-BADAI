@@ -43,7 +43,9 @@ class RolePermissionSeeder extends Seeder
                 'delete_barang',
                 'barang_masuk',
                 'barang_keluar',
+                'adjust_stok',
                 'approve_stok',
+                'reject_stok',
                 'view_laporan',
             ])->pluck('id')->toArray()
         );

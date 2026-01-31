@@ -13,15 +13,20 @@ class StockAdjustmentService
         Barang $barang,
         int $stokFisik,
         string $alasan,
-        ?int $userId = null
+        ?int $userId = null,
+        ?int $adjustmentId = null
     ): Barang {
-        return DB::transaction(function () use ($barang, $stokFisik, $alasan, $userId) {
+        return DB::transaction(function () use ($barang, $stokFisik, $alasan, $userId, $adjustmentId) {
 
             $stokSistem = $barang->stok;
             $selisih    = $stokFisik - $stokSistem;
 
+            // if ($selisih === 0) {
+            //     throw new Exception('Tidak ada selisih stok untuk disesuaikan');
+            // }
+
             if ($selisih === 0) {
-                throw new Exception('Tidak ada selisih stok untuk disesuaikan');
+                return $barang;
             }
 
             $jenis = $selisih > 0 ? 'MASUK' : 'KELUAR';
@@ -34,6 +39,7 @@ class StockAdjustmentService
 
             TransaksiStok::create([
                 'barang_id'     => $barang->id,
+                'adjustment_id' => $adjustmentId,
                 'jenis'         => $jenis,
                 'jumlah'        => abs($selisih),
                 'stok_sebelum'  => $stokSistem,

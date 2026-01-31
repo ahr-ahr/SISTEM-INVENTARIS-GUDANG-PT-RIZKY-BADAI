@@ -13,6 +13,7 @@ use App\Http\Controllers\Inventory\Adjustment\StockAdjustmentController;
 use App\Http\Controllers\Inventory\Category\CategoryController;
 use App\Http\Controllers\Inventory\Supplier\SupplierController;
 use App\Http\Controllers\Inventory\Receiving\ReceivingController;
+use App\Http\Controllers\Inventory\Dispatch\DispatchController;
 use App\Events\BarangMasuk;
 
 Route::prefix('v1')->group(function () {
@@ -48,7 +49,14 @@ Route::get('/test-realtime', function () {
                 Route::get('laporan/stok', [LaporanStokController::class, 'index']);
                 Route::get('alert/stok-minimum', [StokMinimumController::class, 'index']);
                 Route::post('adjustment', [StockAdjustmentController::class, 'store']);
+                Route::post('adjustment/{adjustment}/approve', [StockAdjustmentController::class, 'approve']);
+                Route::post('adjustment/{adjustment}/reject', [StockAdjustmentController::class, 'reject']);
+                Route::post('dispatch', [DispatchController::class, 'store']);
+                Route::post('dispatches/{dispatch}/approve', [DispatchController::class, 'approve']);
+                Route::post('dispatches/{dispatch}/reject',  [DispatchController::class, 'reject']);
                 Route::post('receivings', [ReceivingController::class, 'store']);
+                Route::post('receivings/{receiving}/approve',[ReceivingController::class, 'approve']);
+                Route::post('receivings/{receiving}/reject',[ReceivingController::class, 'reject']);
             });
     });
 });

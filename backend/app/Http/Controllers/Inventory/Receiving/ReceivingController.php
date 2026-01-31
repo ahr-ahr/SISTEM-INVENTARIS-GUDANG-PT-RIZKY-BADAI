@@ -7,9 +7,12 @@ use App\Models\Inventory\Receiving;
 use App\Models\Inventory\Barang;
 use App\Services\Inventory\StokService;
 use App\Http\Requests\Inventory\Receiving\StoreReceivingRequest;
+use App\Http\Requests\Inventory\Receiving\ApproveReceivingRequest;
+use App\Http\Requests\Inventory\Receiving\RejectReceivingRequest;
 use App\Support\ApiMeta;
-use App\Support\HttpMessage;
 use App\Support\HttpStatus;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReceivingController extends Controller
 {
@@ -24,18 +27,73 @@ class ReceivingController extends Controller
             'barang_id'   => $request->barang_id,
             'jumlah'      => $request->jumlah,
             'keterangan'  => $request->keterangan,
+            'status'      => 'PENDING',
             'user_id'     => $request->user()->id,
         ]);
 
-        $barang = Barang::findOrFail($request->barang_id);
-
         return response()->json([
             'success' => true,
-            'message' => HttpMessage::fromStatus(HttpStatus::CREATED),
-            'data'    => [
-                'receiving_id' => $receiving->id,
-            ],
+            'message' => 'Penerimaan barang diajukan',
+            'data'    => ['receiving_id' => $receiving->id],
             'meta'    => ApiMeta::withTimestamp(),
         ], HttpStatus::CREATED);
+    }
+
+    public function approve(Receiving $receiving, ApproveReceivingRequest $request) 
+    {
+        return DB::transaction(function () use ($receiving, $request) {
+
+            if ($receiving->status !== 'PENDING') {
+                abort(422, 'Receiving sudah diproses');
+            }
+
+            $barang = Barang::lockForUpdate()
+                ->findOrFail($receiving->barang_id);
+
+            $this->stokService->tambahStok(
+                barang: $barang,
+                jumlah: $receiving->jumlah,
+                sumber: 'RECEIVING',
+                userId: $request->user()->id,
+                keterangan: 'Receiving #' . $receiving->id,
+                receivingId: $receiving->id
+            );
+
+            $receiving->update([
+                'status'      => 'RECEIVED',
+                'approved_by' => $request->user()->id,
+                'approved_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Receiving disetujui',
+                'data'    => ['receiving_id' => $receiving->id],
+            ]);
+        });
+    }
+
+    public function reject(Receiving $receiving, RejectReceivingRequest $request) 
+    {
+        return DB::transaction(function () use ($receiving, $request) {
+
+            if ($receiving->status !== 'PENDING') {
+                abort(422, 'Receiving sudah diproses');
+            }
+
+            $receiving->update([
+                'status'        => 'REJECTED',
+                'rejected_by'   => $request->user()->id,
+                'rejected_at'   => now(),
+                'reject_reason' => $request->alasan,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Receiving ditolak',
+                'data'    => ['receiving_id' => $receiving->id],
+                'meta'    => ApiMeta::withTimestamp(),
+            ], HttpStatus::OK);
+        });
     }
 }

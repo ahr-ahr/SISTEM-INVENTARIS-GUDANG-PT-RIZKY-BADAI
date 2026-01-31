@@ -25,7 +25,9 @@ enum PermissionEnum: string
     // =====================
     case BARANG_MASUK  = 'barang_masuk';
     case BARANG_KELUAR = 'barang_keluar';
+    case ADJUST_STOK = 'adjust_stok';
     case APPROVE_STOK = 'approve_stok';
+    case REJECT_STOK  = 'reject_stok';
 
     // =====================
     // TIMBANG & QC

@@ -3,15 +3,13 @@
 namespace App\Http\Requests\Inventory\Adjustment;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Enums\PermissionEnum;
+use App\Models\Inventory\StockAdjustment;
 
 class StockAdjustmentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasPermission(
-            PermissionEnum::APPROVE_STOK->value
-        ) ?? false;
+        return $this->user()?->can('create', StockAdjustment::class) ?? false;
     }
 
     public function rules(): array
