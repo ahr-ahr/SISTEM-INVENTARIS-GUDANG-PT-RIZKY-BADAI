@@ -35,7 +35,7 @@ export default function App() {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:8000/api/v1/login', {
+      const response = await fetch('https://api.sig-pt-rizky-badai.com:8443/api/v1/login', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
