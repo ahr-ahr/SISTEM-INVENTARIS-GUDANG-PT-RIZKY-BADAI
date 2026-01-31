@@ -1,30 +1,24 @@
-import { useEffect } from 'react'
-import echo from '../lib/echo'
+import { useState } from 'react'
+import { useReverbChannel } from '../hooks/useReverbChannel'
 
 export default function TestRealtime() {
+  const [messages, setMessages] = useState([])
 
-  useEffect(() => {
-    console.log(import.meta.env.VITE_BROADCASTER)
-console.log(import.meta.env.VITE_REVERB_APP_KEY)
-console.log(import.meta.env.VITE_REVERB_HOST)
-console.log(import.meta.env.VITE_REVERB_SCHEME)
-  }, [])
-
-  useEffect(() => {
-    echo.channel('barang')
-      .listen('.BarangMasuk', (e) => {
-        console.log('🔥 REALTIME BARANG MASUK:', e)
-      })
-
-    return () => {
-      echo.leave('barang')
+  useReverbChannel(
+    'barang',
+    'BarangMasuk',
+    (data) => {
+      setMessages(prev => [...prev, data])
     }
-  }, [])
+  )
 
   return (
     <div>
-      <h1>Realtime Test</h1>
-      <p>Buka console, tunggu event...</p>
+      <h2>Realtime (Production)</h2>
+
+      {messages.map((m, i) => (
+        <pre key={i}>{JSON.stringify(m, null, 2)}</pre>
+      ))}
     </div>
   )
 }

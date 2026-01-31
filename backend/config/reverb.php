@@ -29,7 +29,7 @@ return [
     'servers' => [
 
         'reverb' => [
-            'host' => env('REVERB_SERVER_HOST', '0.0.0.0'),
+            'host' => env('REVERB_SERVER_HOST', 'reverb.sig-pt-rizky-badai.com'),
             'port' => env('REVERB_SERVER_PORT', 3030),
             'path' => env('REVERB_SERVER_PATH', ''),
             'hostname' => env('REVERB_HOST'),

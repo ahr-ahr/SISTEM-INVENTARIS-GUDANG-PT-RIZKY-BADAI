@@ -1,4 +1,0 @@
-http:
-  serversTransports:
-    reverb-transport:
-      disableHTTP2: true

@@ -72,9 +72,6 @@ services:
       - "traefik.http.routers.reverb-secure.service=reverb"
 
       - "traefik.http.services.reverb.loadbalancer.server.port=3030"
-      - "traefik.http.services.reverb.loadbalancer.serverstransport=reverb-transport@file"
-
-      - "traefik.http.serverstransports.reverb-transport.disablehttp2=true"
 
   frontend:
     image: node:24
