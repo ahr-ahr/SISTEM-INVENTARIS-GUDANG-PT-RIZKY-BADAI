@@ -31,6 +31,15 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'username'    => 'qc',
+                'password'    => Hash::make('qc123'),
+                'role_id'     => $roles['petugas_qc'],
+                'employee_id' => 2,
+                'is_active'   => true,
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ],
         ]);
     }
 }

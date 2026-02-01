@@ -13,7 +13,7 @@ class EmployeeSeeder extends Seeder
             [
                 'nip' => 'EMP001',
                 'nama_lengkap' => 'Budi Santoso',
-                'jabatan' => 'Staff Gudang',
+                'jabatan' => 'Admin Gudang',
                 'departemen' => 'Gudang',
                 'no_hp' => '08123456789',
                 'alamat' => 'Jakarta',
@@ -23,7 +23,7 @@ class EmployeeSeeder extends Seeder
             [
                 'nip' => 'EMP002',
                 'nama_lengkap' => 'Siti Aminah',
-                'jabatan' => 'Admin Gudang',
+                'jabatan' => 'Petugas Quality Control',
                 'departemen' => 'Gudang',
                 'no_hp' => '08129876543',
                 'alamat' => 'Bekasi',

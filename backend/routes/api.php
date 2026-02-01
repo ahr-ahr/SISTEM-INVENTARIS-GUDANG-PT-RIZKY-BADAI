@@ -19,6 +19,7 @@ use App\Http\Controllers\Inventory\Transfer\TransferController;
 use App\Http\Controllers\Inventory\Warehouse\WarehouseController;
 use App\Http\Controllers\Inventory\Warehouse\WarehouseLocationController;
 use App\Http\Controllers\Inventory\Warehouse\WarehouseStockController;
+use App\Http\Controllers\Inventory\QualityControl\QualityControlController;
 
 Route::prefix('v1')->group(function () {
 Route::get('/test-realtime', function () {
@@ -85,7 +86,7 @@ Route::get('/test-realtime', function () {
                     Route::post('/transfer', [WarehouseStockController::class, 'transfer']);
                     Route::post('/mark-damaged', [WarehouseStockController::class, 'markDamaged']);
                 });
-                Route::prefix('inventory/qc')->middleware('auth:sanctum')->group(function () {
+                Route::prefix('qc')->group(function () {
                     Route::get('/', [QualityControlController::class, 'index']);
                     Route::post('/', [QualityControlController::class, 'store']);
                     Route::get('/{qc}', [QualityControlController::class, 'show']);

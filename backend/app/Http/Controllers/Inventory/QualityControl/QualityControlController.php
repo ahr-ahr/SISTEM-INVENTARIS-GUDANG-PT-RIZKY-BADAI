@@ -13,6 +13,8 @@ use App\Services\Inventory\QualityControl\QualityControlService;
 use App\Support\ApiMeta;
 use App\Support\HttpStatus;
 use Illuminate\Http\Request;
+use App\Models\Inventory\Receiving;
+use Illuminate\Support\Facades\DB;
 
 class QualityControlController extends Controller
 {
@@ -49,17 +51,42 @@ class QualityControlController extends Controller
      | STORE QC
      |=====================*/
     public function store(StoreQualityControlRequest $request)
-    {
-        $this->authorize('create', QualityControl::class);
+{
+    $this->authorize('create', QualityControl::class);
+
+    return DB::transaction(function () use ($request) {
+
+        $receiving = Receiving::lockForUpdate()
+            ->findOrFail($request->receiving_id);
+
+        if ($receiving->status !== 'RECEIVED') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Receiving belum disetujui, QC belum dapat diajukan',
+                'meta'    => ApiMeta::withTimestamp(),
+            ], HttpStatus::UNPROCESSABLE_ENTITY);
+        }
+
+        $existingQc = QualityControl::where('receiving_id', $receiving->id)
+            ->whereIn('status', ['PENDING', 'APPROVED'])
+            ->first();
+
+        if ($existingQc) {
+            return response()->json([
+                'success' => false,
+                'message' => 'QC untuk receiving ini sudah ada',
+                'meta'    => ApiMeta::withTimestamp(),
+            ], HttpStatus::UNPROCESSABLE_ENTITY);
+        }
 
         $qc = QualityControl::create([
-            'receiving_id'  => $request->receiving_id,
-            'warehouse_id'  => $request->warehouse_id,
-            'location_id'   => $request->location_id,
-            'barang_id'     => $request->barang_id,
-            'qty_received'  => $request->qty_received,
-            'status'        => 'PENDING',
-            'requested_by'  => $request->user()->id,
+            'receiving_id' => $receiving->id,
+            'warehouse_id' => $receiving->warehouse_id,
+            'location_id'  => $receiving->location_id,
+            'barang_id'    => $receiving->barang_id,
+            'qty_received' => $receiving->jumlah,
+            'status'       => 'PENDING',
+            'requested_by' => $request->user()->id,
         ]);
 
         return response()->json([
@@ -68,7 +95,8 @@ class QualityControlController extends Controller
             'data'    => new QualityControlResource($qc),
             'meta'    => ApiMeta::withTimestamp(),
         ], HttpStatus::CREATED);
-    }
+    });
+}
 
     /* =====================
      | APPROVE QC
