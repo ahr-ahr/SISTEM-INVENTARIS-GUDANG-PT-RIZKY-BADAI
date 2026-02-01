@@ -9,6 +9,7 @@ class Dispatch extends Model
     protected $fillable = [
         'barang_id',
         'warehouse_id',
+        'location_id',
         'jumlah',
         'tujuan',
         'keterangan',

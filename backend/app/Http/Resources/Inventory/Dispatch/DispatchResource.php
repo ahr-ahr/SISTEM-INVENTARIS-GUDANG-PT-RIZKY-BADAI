@@ -11,7 +11,6 @@ class DispatchResource extends BaseApiResource
     {
         return [
             'id'     => $this->id,
-            'kode'   => $this->kode,
             'status' => $this->status,
 
             'jumlah' => $this->int($this->jumlah),

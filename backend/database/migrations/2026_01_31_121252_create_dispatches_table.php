@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->string('tujuan', 150);
             $table->text('keterangan')->nullable();
 
-            $table->enum('status', ['PENDING', 'ISSUED', 'CANCELED'])
+            $table->enum('status', ['PENDING', 'RECEIVED', 'REJECTED'])
                 ->default('PENDING');
 
             $table->foreignId('requested_by')
