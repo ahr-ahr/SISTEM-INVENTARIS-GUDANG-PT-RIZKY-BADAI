@@ -9,7 +9,7 @@ class StoreWarehouseRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', Warehouse::class) ?? false;
+        return $this->user()->can('create', Warehouse::class);
     }
 
     public function rules(): array
