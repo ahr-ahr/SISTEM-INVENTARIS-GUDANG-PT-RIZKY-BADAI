@@ -13,11 +13,14 @@ class StockAdjustmentRequest extends FormRequest
     }
 
     public function rules(): array
-    {
-        return [
-            'barang_id'   => 'required|exists:barangs,id',
-            'stok_fisik'  => 'required|integer|min:0',
-            'alasan'      => 'required|string|min:10|max:255',
-        ];
-    }
+{
+    return [
+        'warehouse_id' => 'required|exists:warehouses,id',
+        'location_id'  => 'required|exists:warehouse_locations,id',
+        'barang_id'    => 'required|exists:barangs,id',
+        'stok_fisik'   => 'required|integer|min:0',
+        'alasan'       => 'required|string|max:255',
+    ];
+}
+
 }
