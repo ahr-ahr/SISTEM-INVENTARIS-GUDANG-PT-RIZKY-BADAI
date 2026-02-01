@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Inventory\Warehouse;
 
 use App\Http\Controllers\Controller;
-use App\Models\Inventory\Warehouse;
+use App\Models\Inventory\Warehouses\Warehouse;
 use App\Http\Requests\Inventory\Warehouse\StoreWarehouseRequest;
 use App\Http\Requests\Inventory\Warehouse\UpdateWarehouseRequest;
 use App\Http\Resources\Inventory\Warehouse\WarehouseResource;

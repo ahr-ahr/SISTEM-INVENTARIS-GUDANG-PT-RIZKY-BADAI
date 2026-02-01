@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Inventory\Warehouse;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Inventory\Warehouse;
+use App\Models\Inventory\Warehouses\Warehouse;
 
 class UpdateWarehouseRequest extends FormRequest
 {

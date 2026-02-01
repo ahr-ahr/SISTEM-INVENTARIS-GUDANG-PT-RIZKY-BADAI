@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Inventory\Warehouse;
+use App\Models\Inventory\Warehouses\Warehouse;
 use App\Enums\PermissionEnum;
 
 class WarehousePolicy
