@@ -137,9 +137,6 @@ class WarehouseStockService
             $barangId,
             $jumlah
         ) {
-            if ($fromLocationId === $toLocationId) {
-                throw new Exception('Lokasi asal dan tujuan tidak boleh sama');
-            }
 
             $from = $this->getStock($warehouseId, $fromLocationId, $barangId);
             $to   = $this->getStock($warehouseId, $toLocationId, $barangId);
