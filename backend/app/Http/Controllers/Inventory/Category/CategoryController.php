@@ -62,7 +62,7 @@ class CategoryController extends Controller
         return response()->json([
             'success' => true,
             'message' => HttpMessage::fromStatus(HttpStatus::OK),
-            'data' => new BarangResource($barang),
+            'data' => new CategoryResource($category),
             'meta'    => ApiMeta::withTimestamp(),
         ], HttpStatus::OK);
     }
