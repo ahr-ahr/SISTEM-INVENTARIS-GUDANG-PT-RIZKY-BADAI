@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use App\Support\HttpMessage;
 use App\Support\HttpStatus;
 use App\Http\Requests\Inventory\Adjustment\RejectStockAdjustmentRequest;
+use App\Http\Resources\Inventory\Adjustment\StockAdjustmentResource;
 
 class StockAdjustmentController extends Controller
 {
@@ -49,7 +50,7 @@ class StockAdjustmentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Permintaan penyesuaian stok diajukan',
-            'data'    => ['adjustment_id' => $adjustment->id],
+            'data'    => new StockAdjustmentResource($adjustment),
             'meta'    => ApiMeta::withTimestamp(),
         ], HttpStatus::CREATED);
     }
@@ -83,7 +84,7 @@ class StockAdjustmentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Penyesuaian stok disetujui',
-            'data'    => ['adjustment_id' => $adjustment->id],
+            'data'    => new StockAdjustmentResource($adjustment->fresh()),
             'meta'    => ApiMeta::withTimestamp(),
         ], HttpStatus::OK);
     });
@@ -109,10 +110,7 @@ class StockAdjustmentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Penyesuaian stok ditolak',
-            'data'    => [
-                'adjustment_id' => $adjustment->id,
-                'status'        => $adjustment->status,
-            ],
+            'data'    => new StockAdjustmentResource($adjustment->fresh()),
             'meta'    => ApiMeta::withTimestamp(),
         ], HttpStatus::OK);
     });

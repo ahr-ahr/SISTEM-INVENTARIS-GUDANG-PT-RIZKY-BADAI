@@ -11,7 +11,8 @@ class Receiving extends Model
 
     protected $fillable = [
         'supplier_id',
-        'receiving_id',
+        'warehouse_id',
+        'location_id',
         'barang_id',
         'jumlah',
         'keterangan',

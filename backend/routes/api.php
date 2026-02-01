@@ -15,6 +15,8 @@ use App\Http\Controllers\Inventory\Supplier\SupplierController;
 use App\Http\Controllers\Inventory\Receiving\ReceivingController;
 use App\Http\Controllers\Inventory\Dispatch\DispatchController;
 use App\Events\BarangMasuk;
+use App\Http\Controllers\Inventory\Transfer\TransferController;
+use App\Http\Controllers\Inventory\Warehouses\WarehouseController;
 
 Route::prefix('v1')->group(function () {
 Route::get('/test-realtime', function () {
@@ -57,6 +59,22 @@ Route::get('/test-realtime', function () {
                 Route::post('receivings', [ReceivingController::class, 'store']);
                 Route::post('receivings/{receiving}/approve',[ReceivingController::class, 'approve']);
                 Route::post('receivings/{receiving}/reject',[ReceivingController::class, 'reject']);
+                Route::prefix('transfers')->group(function () {
+                    Route::post('/', [
+                        TransferController::class,
+                        'store'
+                    ]);
+                    Route::post('{transfer}/approve', [
+                        TransferController::class,
+                        'approve'
+                    ]);
+                    Route::post('{transfer}/reject', [
+                        TransferController::class,
+                        'reject'
+                    ]);
+                });
+                Route::apiResource('warehouses', WarehouseController::class);
+                Route::apiResource('warehouse-locations', WarehouseLocationController::class);
             });
     });
 });

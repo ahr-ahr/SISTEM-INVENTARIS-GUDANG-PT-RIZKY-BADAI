@@ -4,15 +4,15 @@ namespace App\Models\Inventory;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Dispatch extends Model
+class Transfer extends Model
 {
     protected $fillable = [
         'barang_id',
-        'warehouse_id',
+        'from_location_id',
+        'to_location_id',
         'jumlah',
-        'tujuan',
-        'keterangan',
         'status',
+        'alasan',
         'requested_by',
         'approved_by',
         'approved_at',
@@ -21,11 +21,8 @@ class Dispatch extends Model
         'reject_reason',
     ];
 
-
     public function barang()
     {
         return $this->belongsTo(Barang::class);
     }
 }
-
-?>

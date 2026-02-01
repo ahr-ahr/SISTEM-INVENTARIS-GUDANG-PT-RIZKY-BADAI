@@ -11,6 +11,9 @@ class TransaksiStok extends Model
 
     protected $fillable = [
         'barang_id',
+        'receiving_id',
+        'dispatch_id',
+        'adjustment_id',
         'jenis',
         'jumlah',
         'stok_sebelum',

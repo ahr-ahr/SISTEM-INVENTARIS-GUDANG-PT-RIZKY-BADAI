@@ -18,6 +18,8 @@ class StoreDispatchRequest extends FormRequest
     {
         return [
             'barang_id'  => 'required|exists:barangs,id',
+            'warehouse_id'  => 'required|exists:warehouses,id',
+            'location_id'  => 'required|exists:warehouse_locations,id',
             'jumlah'     => 'required|integer|min:1',
             'tujuan'     => 'required|string|max:150',
             'keterangan' => 'nullable|string|max:255',

@@ -28,6 +28,8 @@ enum PermissionEnum: string
     case ADJUST_STOK = 'adjust_stok';
     case APPROVE_STOK = 'approve_stok';
     case REJECT_STOK  = 'reject_stok';
+    case TRANSFER_STOK = 'transfer_stok';
+    case VIEW_STOK    = 'view_stok';
 
     // =====================
     // TIMBANG & QC

@@ -13,11 +13,15 @@ use App\Support\ApiMeta;
 use App\Support\HttpStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\Inventory\Receiving\ReceivingCollection;
+use App\Http\Resources\Inventory\Receiving\ReceivingResource;
+use App\Services\Inventory\Warehouse\WarehouseStockService;
 
 class ReceivingController extends Controller
 {
     public function __construct(
-        protected StokService $stokService
+        protected StokService $stokService,
+        protected WarehouseStockService $warehouseStockService
     ) {}
 
     public function store(StoreReceivingRequest $request)
@@ -25,6 +29,8 @@ class ReceivingController extends Controller
         $receiving = Receiving::create([
             'supplier_id' => $request->supplier_id,
             'barang_id'   => $request->barang_id,
+            'warehouse_id' => $request->warehouse_id,
+            'location_id'  => $request->location_id,
             'jumlah'      => $request->jumlah,
             'keterangan'  => $request->keterangan,
             'status'      => 'PENDING',
@@ -34,7 +40,7 @@ class ReceivingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Penerimaan barang diajukan',
-            'data'    => ['receiving_id' => $receiving->id],
+            'data'    => new ReceivingResource($receiving),
             'meta'    => ApiMeta::withTimestamp(),
         ], HttpStatus::CREATED);
     }
@@ -49,6 +55,13 @@ class ReceivingController extends Controller
 
             $barang = Barang::lockForUpdate()
                 ->findOrFail($receiving->barang_id);
+
+            $this->warehouseStockService->increase(
+                $receiving->warehouse_id,
+                $receiving->location_id,
+                $receiving->barang_id,
+                $receiving->jumlah
+            );
 
             $this->stokService->tambahStok(
                 barang: $barang,
@@ -68,8 +81,9 @@ class ReceivingController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Receiving disetujui',
-                'data'    => ['receiving_id' => $receiving->id],
-            ]);
+                'data'    => new ReceivingResource($receiving),
+                'meta'    => ApiMeta::withTimestamp(),
+            ], HttpStatus::OK);
         });
     }
 
@@ -91,7 +105,7 @@ class ReceivingController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Receiving ditolak',
-                'data'    => ['receiving_id' => $receiving->id],
+                'data'    => new ReceivingResource($receiving),
                 'meta'    => ApiMeta::withTimestamp(),
             ], HttpStatus::OK);
         });

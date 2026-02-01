@@ -15,17 +15,23 @@ use App\Support\HttpMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\Inventory\Stock\StokResource;
+use App\Http\Resources\Inventory\Dispatch\DispatchCollection;
+use App\Http\Resources\Inventory\Dispatch\DispatchResource;
+use App\Services\Inventory\Warehouse\WarehouseStockService;
 
 class DispatchController extends Controller
 {
     public function __construct(
-        protected StokService $stokService
+        protected StokService $stokService,
+        protected WarehouseStockService $warehouseStockService
     ) {}
 
     public function store(StoreDispatchRequest $request)
 {
  $dispatch = Dispatch::create([
         'barang_id'    => $request->barang_id,
+        'warehouse_id' => $request->warehouse_id,
+        'location_id'  => $request->location_id,
         'jumlah'       => $request->jumlah,
         'tujuan'       => $request->tujuan,
         'keterangan'   => $request->keterangan,
@@ -36,7 +42,7 @@ class DispatchController extends Controller
     return response()->json([
         'success' => true,
         'message' => HttpMessage::fromStatus(HttpStatus::OK),
-        'data'    => ['dispatch_id' => $dispatch->id],
+        'data'    => new DispatchResource($dispatch),
         'meta' => ApiMeta::withTimestamp(),
     ], HttpStatus::CREATED);
 }
@@ -54,12 +60,19 @@ class DispatchController extends Controller
             $barang = Barang::lockForUpdate()
                 ->findOrFail($dispatch->barang_id);
 
+            $this->warehouseStockService->decrease(
+                $dispatch->warehouse_id,
+                $dispatch->location_id,
+                $dispatch->barang_id,
+                $dispatch->jumlah
+            );
+
             $this->stokService->kurangiStok(
                 barang: $barang,
                 jumlah: $dispatch->jumlah,
                 sumber: 'DISPATCH',
                 userId: $request->user()->id,
-                keterangan: 'Dispatch ' . $dispatch->kode,
+                keterangan: 'Dispatch #' . $dispatch->id,
                 dispatchId: $dispatch->id
             );
 
@@ -72,7 +85,7 @@ class DispatchController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Dispatch disetujui',
-                'data'    => ['dispatch_id' => $dispatch->id],
+                'data'    => new DispatchResource($dispatch),
                 'meta'    => ApiMeta::withTimestamp(),
             ], HttpStatus::OK);
         });
@@ -98,7 +111,7 @@ class DispatchController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Dispatch ditolak',
-                'data'    => ['dispatch_id' => $dispatch->id],
+                'data'    => new DispatchResource($dispatch),
                 'meta'    => ApiMeta::withTimestamp(),
             ], HttpStatus::OK);
         });
