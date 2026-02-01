@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Inventory;
 
 use App\Models\User;
 use App\Models\Inventory\Transfer;

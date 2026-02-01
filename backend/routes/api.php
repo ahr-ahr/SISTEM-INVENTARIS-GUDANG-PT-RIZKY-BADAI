@@ -18,6 +18,7 @@ use App\Events\BarangMasuk;
 use App\Http\Controllers\Inventory\Transfer\TransferController;
 use App\Http\Controllers\Inventory\Warehouse\WarehouseController;
 use App\Http\Controllers\Inventory\Warehouse\WarehouseLocationController;
+use App\Http\Controllers\Inventory\Warehouse\WarehouseStockController;
 
 Route::prefix('v1')->group(function () {
 Route::get('/test-realtime', function () {

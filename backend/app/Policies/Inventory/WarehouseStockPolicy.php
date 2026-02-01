@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Policies\Inventory\Warehouse;
+namespace App\Policies\Inventory;
 
 use App\Models\User;
 use App\Models\Inventory\Warehouses\WarehouseStock;
@@ -8,13 +8,13 @@ use App\Enums\PermissionEnum;
 
 class WarehouseStockPolicy
 {
-    public function view(User $user): bool
+    public function viewAny(User $user): bool
     {
         return $user->hasPermission(
             PermissionEnum::VIEW_STOK->value
         );
     }
-
+    
     public function increase(User $user): bool
     {
         return $user->hasPermission(

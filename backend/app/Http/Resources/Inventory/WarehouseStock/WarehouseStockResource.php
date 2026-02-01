@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\Inventory\Warehouse;
+namespace App\Http\Resources\Inventory\WarehouseStock;
 
 use App\Http\Resources\BaseApiResource;
 

@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Inventory\Warehouse;
 
 use App\Http\Controllers\Controller;
 use App\Services\Inventory\Warehouse\WarehouseStockService;
-use App\Http\Resources\Inventory\Warehouse\WarehouseStockResource;
-use App\Http\Resources\Inventory\Warehouse\WarehouseStockCollection;
-use App\Http\Requests\Inventory\Warehouse\IncreaseWarehouseStockRequest;
-use App\Http\Requests\Inventory\Warehouse\DecreaseWarehouseStockRequest;
-use App\Http\Requests\Inventory\Warehouse\ReserveWarehouseStockRequest;
-use App\Http\Requests\Inventory\Warehouse\TransferWarehouseStockRequest;
-use App\Http\Requests\Inventory\Warehouse\MarkDamagedWarehouseStockRequest;
+use App\Http\Resources\Inventory\WarehouseStock\WarehouseStockResource;
+use App\Http\Resources\Inventory\WarehouseStock\WarehouseStockCollection;
+use App\Http\Requests\Inventory\WarehouseStock\IncreaseWarehouseStockRequest;
+use App\Http\Requests\Inventory\WarehouseStock\DecreaseWarehouseStockRequest;
+use App\Http\Requests\Inventory\WarehouseStock\ReserveWarehouseStockRequest;
+use App\Http\Requests\Inventory\WarehouseStock\TransferWarehouseStockRequest;
+use App\Http\Requests\Inventory\WarehouseStock\MarkDamagedWarehouseStockRequest;
 use App\Models\Inventory\Warehouses\WarehouseStock;
 use App\Support\ApiMeta;
 use App\Support\HttpStatus;
@@ -27,7 +27,7 @@ class WarehouseStockController extends Controller
      |=====================*/
     public function index(Request $request)
     {
-        $this->authorize('view', WarehouseStock::class);
+        $this->authorize('viewAny', WarehouseStock::class);
 
         $query = WarehouseStock::query()
             ->with(['warehouse', 'location', 'barang'])

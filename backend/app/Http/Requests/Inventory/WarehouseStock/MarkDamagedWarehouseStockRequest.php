@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Inventory\Warehouse;
+namespace App\Http\Requests\Inventory\WarehouseStock;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Inventory\Warehouses\WarehouseStock;

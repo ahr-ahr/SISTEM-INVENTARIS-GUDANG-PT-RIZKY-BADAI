@@ -11,7 +11,6 @@ class ReceivingResource extends BaseApiResource
     {
         return [
             'id'     => $this->id,
-            'kode'   => $this->kode ?? null,
             'status' => $this->status,
 
             'jumlah' => $this->int($this->jumlah),
