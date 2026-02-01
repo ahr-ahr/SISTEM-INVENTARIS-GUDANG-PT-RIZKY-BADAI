@@ -8,13 +8,36 @@ class StokSnapshotResource extends BaseApiResource
 {
     public function toArray($request): array
     {
+        $stok       = (int) $this->stok;
+        $stokMin    = (int) ($this->barang?->stok_minimum ?? 0);
+
         return [
-            'barang_id'     => $this->int($this->id),
-            'kode'          => $this->kode,
-            'nama'          => $this->nama,
-            'stok'          => $this->int($this->stok),
-            'stok_minimum'  => $this->int($this->stok_minimum),
-            'status_stok'   => $this->stok <= $this->stok_minimum
+            // Identitas
+            'warehouse' => [
+                'id'   => $this->warehouse_id,
+                'nama' => $this->warehouse?->nama,
+            ],
+
+            'location' => [
+                'id'   => $this->location_id,
+                'nama' => $this->location?->nama,
+            ],
+
+            // Barang
+            'barang' => [
+                'id'            => $this->barang_id,
+                'kode'          => $this->barang?->kode,
+                'nama'          => $this->barang?->nama,
+                'stok_minimum'  => $stokMin,
+            ],
+
+            // Stok
+            'stok'         => $stok,
+            'stok_reserved'=> (int) $this->stok_reserved,
+            'stok_damaged' => (int) $this->stok_damaged,
+
+            // Status
+            'status_stok' => $stok <= $stokMin
                 ? 'MENIPIS'
                 : 'AMAN',
         ];
