@@ -44,4 +44,16 @@ enum PermissionEnum: string
     // LAPORAN
     // =====================
     case VIEW_LAPORAN = 'view_laporan';
+
+    // =====================
+    // RECEIVING (Petugas Bongkar Barang)
+    // =====================
+    case RECEIVING_CONFIRM_UNLOADED = 'receiving_confirm_unloaded';
+    case RECEIVING_MARK_STAGED     = 'receiving_mark_staged';
+
+    // =====================
+    // QC (SCS)
+    // =====================
+    case VIEW_QC_REPORT   = 'view_qc_report';
+    case DECIDE_QC_REJECT = 'decide_qc_reject';
 }

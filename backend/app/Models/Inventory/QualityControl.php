@@ -17,26 +17,32 @@ class QualityControl extends Model
     protected $table = 'quality_controls';
 
     protected $fillable = [
-        'receiving_id',
-        'barang_id',
-        'warehouse_id',
-        'location_id',
-        'qty_received',
-        'qty_accepted',
-        'qty_rejected',
-        'status',
-        'requested_by',
-        'approved_by',
-        'approved_at',
-        'rejected_by',
-        'rejected_at',
-        'reject_reason',
-    ];
+    'receiving_id',
+    'warehouse_id',
+    'location_id',
+    'barang_id',
+    'qty_received',
+    'qty_accepted',
+    'qty_rejected',
+    'status',
+    'requested_by',
+    'approved_by',
+    'approved_at',
+    'rejected_by',
+    'rejected_at',
+    'reject_reason',
+    'reject_decision',
+    'decision_note',
+    'decided_by',
+    'decided_at',
+];
 
-    protected $casts = [
-        'approved_at' => 'datetime',
-        'rejected_at' => 'datetime',
-    ];
+protected $casts = [
+    'approved_at' => 'datetime',
+    'rejected_at' => 'datetime',
+    'decided_at'  => 'datetime',
+];
+
 
     /* =====================
      | RELATIONS

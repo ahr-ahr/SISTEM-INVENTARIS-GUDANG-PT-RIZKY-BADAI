@@ -110,4 +110,57 @@ class ReceivingController extends Controller
             ], HttpStatus::OK);
         });
     }
+
+    public function confirmUnloaded(Receiving $receiving)
+{
+    $this->authorize('confirmUnloaded', $receiving);
+
+    if ($receiving->unloaded_at) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Receiving sudah dikonfirmasi dibongkar',
+        ], 422);
+    }
+
+    $receiving->update([
+        'unloaded_at' => now(),
+        'unloaded_by' => auth()->id(),
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Barang berhasil dikonfirmasi sudah dibongkar',
+        'meta'    => ApiMeta::withTimestamp(),
+    ], HttpStatus::OK);
+}
+public function markStaged(Receiving $receiving)
+{
+    $this->authorize('markStaged', $receiving);
+
+    if (!$receiving->unloaded_at) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Barang belum dikonfirmasi dibongkar',
+        ], 422);
+    }
+
+    if ($receiving->staged_at) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Receiving sudah ditandai siap QC',
+        ], 422);
+    }
+
+    $receiving->update([
+        'staged_at' => now(),
+        'staged_by' => auth()->id(),
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Barang berhasil ditandai siap QC',
+        'meta'    => ApiMeta::withTimestamp(),
+    ], HttpStatus::OK);
+}
+
 }

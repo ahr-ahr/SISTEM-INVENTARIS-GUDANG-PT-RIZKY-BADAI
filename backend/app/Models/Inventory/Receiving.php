@@ -23,6 +23,10 @@ class Receiving extends Model
         'rejected_by',
         'rejected_at',
         'reject_reason',
+        'unloaded_at',
+        'unloaded_by',
+        'staged_at',
+        'staged_by',
     ];
 
     public function supplier()

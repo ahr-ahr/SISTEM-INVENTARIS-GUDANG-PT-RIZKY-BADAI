@@ -13,7 +13,8 @@ class QualityControlPolicy
      |=====================*/
     public function viewAny(User $user): bool
     {
-        return $user->hasPermission(PermissionEnum::VIEW_STOK->value);
+        return $user->hasPermission(PermissionEnum::VIEW_QC_REPORT->value)
+        || $user->hasPermission(PermissionEnum::QC_CHECK->value);
     }
 
     public function view(User $user, QualityControl $qc): bool
@@ -42,7 +43,6 @@ class QualityControlPolicy
             return false;
         }
 
-        // optional: tidak boleh approve QC sendiri
         if ($qc->requested_by === $user->id) {
             return false;
         }
@@ -68,5 +68,10 @@ class QualityControlPolicy
         }
 
         return true;
+    }
+
+    public function decide(User $user, QualityControl $qc): bool
+    {
+        return $user->hasPermission(PermissionEnum::DECIDE_QC_REJECT->value);
     }
 }

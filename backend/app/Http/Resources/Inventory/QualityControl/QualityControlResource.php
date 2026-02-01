@@ -60,6 +60,13 @@ class QualityControlResource extends BaseApiResource
             'rejected_at' => $this->rejected_at,
             'reject_reason' => $this->reject_reason,
 
+            'qc_decision' => [
+                'decision' => $this->reject_decision,
+                'note'     => $this->decision_note,
+                'by'       => $this->decided_by,
+                'at'       => optional($this->decided_at)?->toISOString(),
+            ],
+
             'created_at' => $this->created_at,
         ];
     }

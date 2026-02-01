@@ -28,4 +28,18 @@ class ReceivingPolicy
             && $receiving->status === 'PENDING'
             && $receiving->user_id !== $user->id;
     }
+
+    public function confirmUnloaded(User $user, Receiving $receiving): bool
+{
+    return $user->hasPermission(
+        PermissionEnum::RECEIVING_CONFIRM_UNLOADED->value
+    );
+}
+
+public function markStaged(User $user, Receiving $receiving): bool
+{
+    return $user->hasPermission(
+        PermissionEnum::RECEIVING_MARK_STAGED->value
+    );
+}
 }

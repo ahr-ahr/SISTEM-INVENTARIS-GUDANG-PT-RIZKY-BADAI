@@ -62,6 +62,8 @@ Route::get('/test-realtime', function () {
                 Route::post('receivings', [ReceivingController::class, 'store']);
                 Route::post('receivings/{receiving}/approve',[ReceivingController::class, 'approve']);
                 Route::post('receivings/{receiving}/reject',[ReceivingController::class, 'reject']);
+                Route::post('{receiving}/confirm-unloaded', [ReceivingController::class, 'confirmUnloaded']);
+                Route::post('{receiving}/mark-staged', [ReceivingController::class, 'markStaged']);
                 Route::prefix('transfers')->group(function () {
                     Route::post('/', [
                         TransferController::class,
@@ -92,6 +94,7 @@ Route::get('/test-realtime', function () {
                     Route::get('/{qc}', [QualityControlController::class, 'show']);
                     Route::post('/{qc}/approve', [QualityControlController::class, 'approve']);
                     Route::post('/{qc}/reject', [QualityControlController::class, 'reject']);
+                    Route::post('/{qc}/decision', [QualityControlDecisionController::class, 'decide']);
                 });
             });
     });
