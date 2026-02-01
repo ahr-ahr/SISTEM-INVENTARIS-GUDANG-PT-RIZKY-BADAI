@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Inventory\Adjustment;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\Adjustment\StockAdjustmentRequest;
+use App\Http\Requests\Inventory\Adjustment\ApproveStockAdjustmentRequest;
 use App\Services\Inventory\Adjustment\StockAdjustmentService;
 use App\Models\Inventory\Barang;
 use App\Http\Resources\Inventory\Stock\StokResource;
@@ -15,6 +16,7 @@ use App\Support\HttpMessage;
 use App\Support\HttpStatus;
 use App\Http\Requests\Inventory\Adjustment\RejectStockAdjustmentRequest;
 use App\Http\Resources\Inventory\Adjustment\StockAdjustmentResource;
+use App\Models\Inventory\Warehouses\WarehouseStock;
 
 class StockAdjustmentController extends Controller
 {
@@ -26,26 +28,34 @@ class StockAdjustmentController extends Controller
     {
         $barang = Barang::findOrFail($request->barang_id);
 
-        $stokSistem = $barang->stok;
-        $stokFisik  = $request->stok_fisik;
+        $stokWarehouse = WarehouseStock::where([
+    'warehouse_id' => $request->warehouse_id,
+    'location_id'  => $request->location_id,
+    'barang_id'    => $request->barang_id,
+])->first();
 
-        if ($stokFisik === $stokSistem) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Tidak ada selisih stok untuk diajukan',
-                'meta'    => ApiMeta::withTimestamp(),
-            ], HttpStatus::UNPROCESSABLE_ENTITY);
-        }
+$stokSistem = $stokWarehouse?->stok ?? 0;
+$stokFisik  = $request->stok_fisik;
 
-        $adjustment = StockAdjustment::create([
-            'barang_id'    => $barang->id,
-            'stok_sistem'  => $stokSistem,
-            'stok_fisik'   => $stokFisik,
-            'selisih'      => $stokFisik - $stokSistem,
-            'alasan'       => $request->alasan,
-            'status'       => 'PENDING',
-            'requested_by' => $request->user()->id,
-        ]);
+if ($stokFisik === $stokSistem) {
+    return response()->json([
+        'success' => false,
+        'message' => 'Tidak ada selisih stok untuk diajukan',
+        'meta'    => ApiMeta::withTimestamp(),
+    ], HttpStatus::UNPROCESSABLE_ENTITY);
+}
+
+$adjustment = StockAdjustment::create([
+    'warehouse_id' => $request->warehouse_id,
+    'location_id'  => $request->location_id,
+    'barang_id'    => $request->barang_id,
+    'stok_sistem'  => $stokSistem,
+    'stok_fisik'   => $stokFisik,
+    'selisih'      => $stokFisik - $stokSistem,
+    'alasan'       => $request->alasan,
+    'status'       => 'PENDING',
+    'requested_by' => $request->user()->id,
+]);
 
         return response()->json([
             'success' => true,
@@ -59,35 +69,17 @@ class StockAdjustmentController extends Controller
     StockAdjustment $adjustment,
     ApproveStockAdjustmentRequest $request
 ) {
-    return DB::transaction(function () use ($adjustment, $request) {
+    $this->service->adjust(
+        $adjustment,
+        $request->user()->id
+    );
 
-        if ($adjustment->status !== 'PENDING') {
-            abort(422, 'Adjustment sudah diproses');
-        }
-
-        $barang = Barang::lockForUpdate()->findOrFail($adjustment->barang_id);
-
-        $this->service->adjust(
-            $barang,
-            $adjustment->stok_fisik,
-            $adjustment->alasan,
-            $request->user()->id,
-            adjustmentId: $adjustment->id
-        );
-
-        $adjustment->update([
-            'status'      => 'APPROVED',
-            'approved_by' => $request->user()->id,
-            'approved_at' => now(),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Penyesuaian stok disetujui',
-            'data'    => new StockAdjustmentResource($adjustment->fresh()),
-            'meta'    => ApiMeta::withTimestamp(),
-        ], HttpStatus::OK);
-    });
+    return response()->json([
+        'success' => true,
+        'message' => 'Penyesuaian stok disetujui',
+        'data'    => new StockAdjustmentResource($adjustment->fresh()),
+        'meta'    => ApiMeta::withTimestamp(),
+    ], HttpStatus::OK);
 }
 
     public function reject(
