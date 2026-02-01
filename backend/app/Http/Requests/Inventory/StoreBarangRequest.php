@@ -17,7 +17,7 @@ class StoreBarangRequest extends FormRequest
         return [
             'kode'         => 'required|string|unique:barangs,kode',
             'nama'         => 'required|string',
-            'kategori'     => 'nullable|string',
+            'category_id'     => 'nullable|string:exists:categories,id',
             'satuan'       => 'required|string',
             'stok_minimum' => 'nullable|integer|min:0',
             'deskripsi'    => 'nullable|string',
