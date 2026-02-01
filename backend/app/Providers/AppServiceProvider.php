@@ -41,6 +41,7 @@ use App\Policies\Inventory\TransferPolicy;
 use App\Policies\Inventory\WarehousePolicy;
 use App\Policies\Inventory\WarehouseLocationPolicy;
 use App\Policies\Inventory\WarehouseStockPolicy;
+use App\Policies\Inventory\QualityControlPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -76,6 +77,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(StokAlert::class, StokAlertPolicy::class);
         Gate::policy(Supplier::class, SupplierPolicy::class);
         Gate::policy(Transfer::class, TransferPolicy::class);
+        Gate::policy(QualityControl::class, QualityControlPolicy::class);
 
         /*
         |--------------------------------------------------------------------------
