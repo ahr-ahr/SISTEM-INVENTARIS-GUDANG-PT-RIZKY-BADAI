@@ -85,6 +85,13 @@ Route::get('/test-realtime', function () {
                     Route::post('/transfer', [WarehouseStockController::class, 'transfer']);
                     Route::post('/mark-damaged', [WarehouseStockController::class, 'markDamaged']);
                 });
+                Route::prefix('inventory/qc')->middleware('auth:sanctum')->group(function () {
+                    Route::get('/', [QualityControlController::class, 'index']);
+                    Route::post('/', [QualityControlController::class, 'store']);
+                    Route::get('/{qc}', [QualityControlController::class, 'show']);
+                    Route::post('/{qc}/approve', [QualityControlController::class, 'approve']);
+                    Route::post('/{qc}/reject', [QualityControlController::class, 'reject']);
+                });
             });
     });
 });
