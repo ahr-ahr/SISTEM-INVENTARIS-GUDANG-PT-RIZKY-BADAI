@@ -24,6 +24,9 @@ class DatabaseSeeder extends Seeder
 
             CategorySeeder::class,
             BarangSeeder::class,
+
+            WarehouseSeeder::class,
+            WarehouseLocationSeeder::class,
         ]);
     }
 }
