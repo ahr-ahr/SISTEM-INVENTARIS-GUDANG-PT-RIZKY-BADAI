@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [modalMode, setModalMode] = useState('create');
   const [modalType, setModalType] = useState('category'); // 'category', 'barang', 'receiving', 'dispatch', 'adjustment'
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedBarang, setSelectedBarang] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showActiveOnly, setShowActiveOnly] = useState(true);
   const [toggleLoading, setToggleLoading] = useState({});
@@ -406,6 +407,66 @@ export default function Dashboard() {
     }
   };
 
+  // Handler untuk edit barang
+const handleUpdateBarang = async (e) => {
+  e.preventDefault();
+  try {
+    const { response, data } = await api.put(`/inventory/barangs/${selectedBarang.barang_id}`, {
+      kode: barangForm.kode,
+      nama: barangForm.nama,
+      category_id: parseInt(barangForm.category_id),
+      satuan: barangForm.satuan,
+      harga: parseFloat(barangForm.harga),
+      stok_min: parseInt(barangForm.stok_min),
+      deskripsi: barangForm.deskripsi || null
+    });
+    
+    if (data.success) {
+      alert('Barang berhasil diperbarui!');
+      setShowModal(false);
+      resetBarangForm();
+      setSelectedBarang(null);
+      fetchBarang();
+      fetchStats();
+    } else {
+      alert(data.message || 'Gagal memperbarui barang');
+    }
+  } catch (error) {
+    console.error('Error updating barang:', error);
+    alert('Terjadi kesalahan saat memperbarui barang: ' + (error.message || 'Unknown error'));
+  }
+};
+
+  // Handler untuk nonaktifkan barang
+const handleDeleteBarang = async (barang) => {
+  if (!confirm(`Apakah Anda yakin ingin menonaktifkan barang "${barang.nama}"?`)) {
+    return;
+  }
+  
+  setToggleLoading(prev => ({ ...prev, [barang.barang_id]: true }));
+  
+  try {
+    const { response, data } = await api.delete(`/inventory/barangs/${barang.barang_id}`);
+    
+    if (response.ok || data.success) {
+      alert('Barang berhasil dinonaktifkan!');
+      fetchBarang();
+      fetchStats();
+    } else {
+      alert(data.message || 'Gagal menonaktifkan barang');
+    }
+  } catch (error) {
+    console.error('Delete barang error:', error);
+    alert('Terjadi kesalahan saat menonaktifkan barang');
+  } finally {
+    setToggleLoading(prev => {
+      const newState = { ...prev };
+      delete newState[barang.barang_id];
+      return newState;
+    });
+  }
+};
+
   const openCreateModal = () => {
     setModalMode('create');
     setModalType('category');
@@ -432,6 +493,22 @@ export default function Dashboard() {
     resetBarangForm();
     setShowModal(true);
   };
+
+  const openEditBarangModal = (barang) => {
+  setModalType('barang');
+  setModalMode('edit');
+  setSelectedBarang(barang);
+  setBarangForm({
+    kode: barang.kode,
+    nama: barang.nama,
+    category_id: barang.category_id,
+    satuan: barang.satuan,
+    harga: barang.harga,
+    stok_min: barang.stok_min,
+    deskripsi: barang.deskripsi || ''
+  });
+  setShowModal(true);
+};
 
   const openReceivingModal = () => {
     setModalType('receiving');
@@ -522,12 +599,12 @@ export default function Dashboard() {
     : categories.filter(cat => cat.is_active === false);
 
   // Get selected barang info for adjustment form
-  const getSelectedBarangInfo = () => {
-    const barang = barangList.find(b => b.barang_id === parseInt(adjustmentForm.barang_id));
-    return barang || null;
-  };
+const getSelectedBarangInfo = () => {
+  const barang = barangList.find(b => b.barang_id === parseInt(adjustmentForm.barang_id));
+  return barang || null;
+};
 
-  const selectedBarang = getSelectedBarangInfo();
+const selectedBarangForAdjustment = getSelectedBarangInfo();
 
   // Render section berdasarkan activeSection
   const renderContent = () => {
@@ -849,23 +926,25 @@ export default function Dashboard() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
-                      className="text-blue-600 hover:text-blue-800 mr-3"
-                      onClick={() => {
-                        // TODO: Implement edit barang
-                        alert('Fitur edit barang akan segera tersedia');
-                      }}
-                    >
-                      Edit
-                    </button>
+  className="text-blue-600 hover:text-blue-800 mr-3"
+  onClick={() => openEditBarangModal(barang)}
+>
+  Edit
+</button>
                     <button 
-                      className="text-red-600 hover:text-red-800"
-                      onClick={() => {
-                        // TODO: Implement deactivate barang
-                        alert('Fitur nonaktifkan barang akan segera tersedia');
-                      }}
-                    >
-                      Nonaktifkan
-                    </button>
+  className="text-red-600 hover:text-red-800"
+  onClick={() => handleDeleteBarang(barang)}
+  disabled={toggleLoading[barang.barang_id]}
+>
+  {toggleLoading[barang.barang_id] ? (
+    <span className="inline-flex items-center gap-1">
+      <div className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" />
+      Loading...
+    </span>
+  ) : (
+    'Nonaktifkan'
+  )}
+</button>
                   </td>
                 </tr>
               ))}
@@ -1120,23 +1199,25 @@ export default function Dashboard() {
                   </div>
                 </form>
               ) : modalType === 'barang' ? (
-                <form onSubmit={handleCreateBarang}>
+  <form onSubmit={modalMode === 'create' ? handleCreateBarang : handleUpdateBarang}>
                   <div className="bg-white px-6 pt-6 pb-4">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6">Tambah Barang Baru</h3>
-                    <div className="space-y-4">
+<h3 className="text-xl font-bold text-gray-900 mb-6">
+  {modalMode === 'create' ? 'Tambah Barang Baru' : 'Edit Barang'}
+</h3>                    <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Kode Barang <span className="text-red-500">*</span>
                         </label>
                         <input
-                          type="text"
-                          required
-                          maxLength={50}
-                          value={barangForm.kode}
-                          onChange={(e) => setBarangForm({ ...barangForm, kode: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                          placeholder="Contoh: BRG001"
-                        />
+  type="text"
+  required
+  maxLength={50}
+  value={barangForm.kode}
+  onChange={(e) => setBarangForm({ ...barangForm, kode: e.target.value })}
+  disabled={modalMode === 'edit'}
+  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+  placeholder="Contoh: BRG001"
+/>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1236,11 +1317,11 @@ export default function Dashboard() {
                       Batal
                     </button>
                     <button
-                      type="submit"
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
-                    >
-                      Tambah Barang
-                    </button>
+  type="submit"
+  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
+>
+  {modalMode === 'create' ? 'Tambah Barang' : 'Simpan Perubahan'}
+</button>
                   </div>
                 </form>
               ) : modalType === 'receiving' ? (
@@ -1477,7 +1558,7 @@ export default function Dashboard() {
                         </select>
                       </div>
 
-                      {selectedBarang && (
+                      {selectedBarangForAdjustment  && (
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                           <div className="flex items-start gap-3">
                             <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -1487,10 +1568,10 @@ export default function Dashboard() {
                             </div>
                             <div className="flex-1">
                               <p className="text-sm font-medium text-blue-900">Stok Sistem Saat Ini</p>
-                              <p className="text-2xl font-bold text-blue-700 mt-1">{selectedBarang.stok} unit</p>
-                              <p className="text-xs text-blue-600 mt-1">
-                                {selectedBarang.kode} - {selectedBarang.nama}
-                              </p>
+                              <p className="text-2xl font-bold text-blue-700 mt-1">{selectedBarangForAdjustment.stok} unit</p>
+  <p className="text-xs text-blue-600 mt-1">
+    {selectedBarangForAdjustment.kode} - {selectedBarangForAdjustment.nama}
+  </p>
                             </div>
                           </div>
                         </div>
@@ -1514,11 +1595,11 @@ export default function Dashboard() {
                         </p>
                       </div>
 
-                      {selectedBarang && adjustmentForm.stok_fisik !== '' && (
+                      {selectedBarangForAdjustment  && adjustmentForm.stok_fisik !== '' && (
                         <div className={`rounded-lg p-4 ${
-                          parseInt(adjustmentForm.stok_fisik) === selectedBarang.stok 
+                          parseInt(adjustmentForm.stok_fisik) === selectedBarangForAdjustment.stok 
                             ? 'bg-green-50 border border-green-200' 
-                            : parseInt(adjustmentForm.stok_fisik) > selectedBarang.stok
+                            : parseInt(adjustmentForm.stok_fisik) > selectedBarangForAdjustment.stok
                             ? 'bg-yellow-50 border border-yellow-200'
                             : 'bg-red-50 border border-red-200'
                         }`}>
