@@ -23,7 +23,7 @@ export default function App() {
     setParticles(newParticles);
   }, []);
 
-  // FUNCTION YANG SUDAH DIPERBAIKI UNTUK MENGATASI CSRF ERROR
+  // FUNCTION LOGIN - TIDAK PAKAI CSRF, PAKAI TOKEN SAJA
   const handleSubmit = async () => {
     setError('');
 
@@ -35,17 +35,12 @@ export default function App() {
     setIsLoading(true);
     
     try {
-      // SOLUSI 1: Tambahkan credentials untuk mengirim cookies (termasuk CSRF token)
       const response = await fetch('https://api.sig-pt-rizky-badai.com:8443/api/v1/login', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          // SOLUSI 2: Tambahkan header X-Requested-With untuk Laravel
-          'X-Requested-With': 'XMLHttpRequest',
         },
-        // SOLUSI 3: Kirim credentials (cookies) bersama request
-        credentials: 'include',
         body: JSON.stringify({
           username: username,
           password: password
@@ -78,9 +73,6 @@ export default function App() {
         } else {
           setError(data.message || 'Login gagal. Periksa username dan password Anda.');
         }
-      } else if (response.status === 419) {
-        // SOLUSI 4: Handling khusus untuk CSRF error
-        setError('Sesi keamanan berakhir. Silakan refresh halaman dan coba lagi.');
       } else {
         setError(data.message || `Error ${response.status}: Terjadi kesalahan pada server.`);
       }
