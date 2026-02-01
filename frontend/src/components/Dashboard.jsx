@@ -1,6 +1,7 @@
 // src/components/Dashboard.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import api from '../utils/api'; // IMPORT API UTILITY
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -18,12 +19,17 @@ export default function Dashboard() {
     is_active: true
   });
   const [userData, setUserData] = useState(null);
-  const [token, setToken] = useState('');
 
   useEffect(() => {
     const user = location.state?.user;
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
+    
+    // Cek apakah user sudah login
+    if (!storedToken) {
+      navigate('/');
+      return;
+    }
     
     if (user) {
       setUserData(user);
@@ -31,118 +37,96 @@ export default function Dashboard() {
       setUserData({ user: JSON.parse(storedUser) });
     }
     
-    if (storedToken) {
-      setToken(storedToken);
-    }
-    
     fetchCategories();
-  }, [location.state]);
+  }, [location.state, navigate]);
 
+  // REFACTORED: Pakai api utility
   const fetchCategories = async () => {
-  setLoading(true);
-  try {
-    const storedToken = localStorage.getItem('token');
-    console.log('Token:', storedToken); // Debug token
-    
-    const response = await fetch('http://localhost:8000/api/v1/inventory/categories', {
-      headers: { 
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${storedToken}`
+    setLoading(true);
+    try {
+      const { response, data } = await api.get('/inventory/categories');
+      
+      console.log('Response Data:', data); // Debug response
+      
+      if (data.success) {
+        // Cek apakah data.data.items adalah string atau array
+        if (typeof data.data.items === 'string') {
+          const parsedItems = JSON.parse(data.data.items);
+          console.log('Parsed Items:', parsedItems);
+          setCategories(parsedItems);
+        } else if (Array.isArray(data.data.items)) {
+          console.log('Direct Array Items:', data.data.items);
+          setCategories(data.data.items);
+        } else if (Array.isArray(data.data)) {
+          console.log('Data is Array:', data.data);
+          setCategories(data.data);
+        }
       }
-    });
-    
-    const data = await response.json();
-    console.log('Response Data:', data); // Debug response
-    
-    if (data.success) {
-      // Cek apakah data.data.items adalah string atau array
-      if (typeof data.data.items === 'string') {
-        const parsedItems = JSON.parse(data.data.items);
-        console.log('Parsed Items:', parsedItems); // Debug parsed items
-        setCategories(parsedItems);
-      } else if (Array.isArray(data.data.items)) {
-        console.log('Direct Array Items:', data.data.items); // Debug array items
-        setCategories(data.data.items);
-      } else if (Array.isArray(data.data)) {
-        console.log('Data is Array:', data.data); // Debug if data is array
-        setCategories(data.data);
-      }
+    } catch (error) {
+      console.error('Error:', error);
     }
-  } catch (error) {
-    console.error('Error:', error);
-  }
-  setLoading(false);
-};
+    setLoading(false);
+  };
 
+  // REFACTORED: Pakai api utility
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      const storedToken = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/v1/inventory/categories', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${storedToken}`
-        },
-        body: JSON.stringify(formData)
-      });
-      const data = await response.json();
+      const { response, data } = await api.post('/inventory/categories', formData);
+      
       if (data.success) {
         fetchCategories();
         setShowModal(false);
         resetForm();
+        alert('Kategori berhasil ditambahkan!');
+      } else {
+        alert(data.message || 'Gagal menambahkan kategori');
       }
     } catch (error) {
       console.error('Error:', error);
+      alert('Terjadi kesalahan saat menambahkan kategori');
     }
   };
 
+  // REFACTORED: Pakai api utility
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      const storedToken = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/v1/inventory/categories/${selectedCategory.id}`, {
-        method: 'PUT',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${storedToken}`
-        },
-        body: JSON.stringify({
-          nama: formData.nama,
-          deskripsi: formData.deskripsi,
-          is_active: formData.is_active
-        })
+      const { response, data } = await api.put(`/inventory/categories/${selectedCategory.id}`, {
+        nama: formData.nama,
+        deskripsi: formData.deskripsi,
+        is_active: formData.is_active
       });
-      const data = await response.json();
+      
       if (data.success) {
         fetchCategories();
         setShowModal(false);
         resetForm();
+        alert('Kategori berhasil diperbarui!');
+      } else {
+        alert(data.message || 'Gagal memperbarui kategori');
       }
     } catch (error) {
       console.error('Error:', error);
+      alert('Terjadi kesalahan saat memperbarui kategori');
     }
   };
 
+  // REFACTORED: Pakai api utility
   const handleDelete = async (id) => {
     if (!confirm('Apakah Anda yakin ingin menghapus kategori ini?')) return;
     try {
-      const storedToken = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/v1/inventory/categories/${id}`, {
-        method: 'DELETE',
-        headers: { 
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${storedToken}`
-        }
-      });
-      const data = await response.json();
+      const { response, data } = await api.delete(`/inventory/categories/${id}`);
+      
       if (data.success) {
         fetchCategories();
+        alert('Kategori berhasil dihapus!');
+      } else {
+        alert(data.message || 'Gagal menghapus kategori');
       }
     } catch (error) {
       console.error('Error:', error);
+      alert('Terjadi kesalahan saat menghapus kategori');
     }
   };
 
@@ -174,10 +158,21 @@ export default function Dashboard() {
     setSelectedCategory(null);
   };
 
-  const handleLogout = () => {
-    if (confirm('Apakah Anda yakin ingin logout?')) {
+  // REFACTORED: Logout dengan optional API call
+  const handleLogout = async () => {
+    if (!confirm('Apakah Anda yakin ingin logout?')) return;
+    
+    try {
+      // Optional: Call logout endpoint
+      await api.post('/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      
+      // Redirect ke login
       navigate('/');
     }
   };

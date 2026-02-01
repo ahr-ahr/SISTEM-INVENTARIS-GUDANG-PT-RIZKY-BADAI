@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
          * =================================================
          */
         $middleware->api(prepend: [
-            EnsureFrontendRequestsAreStateful::class,
+            //EnsureFrontendRequestsAreStateful::class,
             ForceJsonResponse::class,
             //DecryptRequest::class,
             //EncryptResponse::class,
