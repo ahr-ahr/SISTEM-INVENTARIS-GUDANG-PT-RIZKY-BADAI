@@ -8,6 +8,7 @@ class Transfer extends Model
 {
     protected $fillable = [
         'barang_id',
+        'warehouse_id',
         'from_location_id',
         'to_location_id',
         'jumlah',

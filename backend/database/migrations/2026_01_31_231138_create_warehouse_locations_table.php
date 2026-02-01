@@ -23,7 +23,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->unique(['warehouse_id']);
+            $table->unique(['warehouse_id', 'parent_id', 'nama']);
         });
     }
 

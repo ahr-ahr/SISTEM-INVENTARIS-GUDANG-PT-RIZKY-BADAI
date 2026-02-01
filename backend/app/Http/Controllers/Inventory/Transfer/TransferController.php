@@ -11,12 +11,11 @@ use App\Http\Requests\Inventory\Transfer\RejectTransferRequest;
 use App\Http\Resources\Inventory\Transfer\TransferResource;
 use App\Support\ApiMeta;
 use App\Support\HttpStatus;
-use App\Services\Inventory\Warehouse\WarehouseStockService;
 
 class TransferController extends Controller
 {
     public function __construct(
-        protected TransferService $service,
+        protected TransferService $service
     ) {}
 
     public function store(StoreTransferRequest $request)
@@ -46,8 +45,7 @@ class TransferController extends Controller
     ) {
         $this->service->approve(
             $transfer,
-            $request->user()->id,
-            $this->warehouseStockService
+            $request->user()->id
         );
 
         return response()->json([

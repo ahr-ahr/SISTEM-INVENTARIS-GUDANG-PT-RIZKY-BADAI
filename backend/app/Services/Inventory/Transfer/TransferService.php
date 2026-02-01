@@ -9,12 +9,15 @@ use Exception;
 
 class TransferService
 {
+    public function __construct(
+        protected WarehouseStockService $warehouseStockService
+    ) {}
+
     public function approve(
         Transfer $transfer,
-        int $userId,
-        WarehouseStockService $warehouseStockService
+        int $userId
     ): void {
-        DB::transaction(function () use ($transfer, $userId, $warehouseStockService) {
+        DB::transaction(function () use ($transfer, $userId) {
 
             if ($transfer->status !== 'PENDING') {
                 throw new Exception('Transfer sudah diproses');
@@ -24,7 +27,7 @@ class TransferService
                 throw new Exception('Lokasi asal dan tujuan tidak boleh sama');
             }
 
-            $warehouseStockService->transfer(
+            $this->warehouseStockService->transfer(
                 warehouseId: $transfer->warehouse_id,
                 fromLocationId: $transfer->from_location_id,
                 toLocationId: $transfer->to_location_id,
