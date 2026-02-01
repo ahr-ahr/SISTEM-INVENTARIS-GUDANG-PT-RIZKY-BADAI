@@ -7,6 +7,7 @@ use App\Models\Inventory\Category;
 use App\Http\Requests\Inventory\Category\StoreCategoryRequest;
 use App\Http\Requests\Inventory\Category\UpdateCategoryRequest;
 use App\Http\Resources\Inventory\Category\CategoryResource;
+use App\Http\Resources\Inventory\BarangResource;
 use App\Http\Resources\Inventory\Category\CategoryCollection;
 use App\Support\ApiMeta;
 use App\Support\HttpMessage;

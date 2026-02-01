@@ -76,6 +76,14 @@ Route::get('/test-realtime', function () {
                 });
                 Route::apiResource('warehouses', WarehouseController::class);
                 Route::apiResource('warehouse-locations', WarehouseLocationController::class);
+                Route::prefix('warehouse-stocks')->group(function () {
+                    Route::get('/', [WarehouseStockController::class, 'index']);
+                    Route::post('/increase', [WarehouseStockController::class, 'increase']);
+                    Route::post('/decrease', [WarehouseStockController::class, 'decrease']);
+                    Route::post('/reserve', [WarehouseStockController::class, 'reserve']);
+                    Route::post('/transfer', [WarehouseStockController::class, 'transfer']);
+                    Route::post('/mark-damaged', [WarehouseStockController::class, 'markDamaged']);
+                });
             });
     });
 });
