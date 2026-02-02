@@ -22,7 +22,7 @@ class WarehouseSeeder extends Seeder
             ],
             [
                 'nama'       => 'Gudang Cabang Bandung',
-                'tipe'       => 'BRANCH',
+                'tipe'       => 'VIRTUAL',
                 'alamat'     => 'Jl. Raya Bandung No. 88, Bandung',
                 'is_active'  => true,
                 'created_at'=> now(),
