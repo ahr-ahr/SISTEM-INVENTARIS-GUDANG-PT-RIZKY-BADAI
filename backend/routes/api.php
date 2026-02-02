@@ -20,6 +20,11 @@ use App\Http\Controllers\Inventory\Warehouse\WarehouseController;
 use App\Http\Controllers\Inventory\Warehouse\WarehouseLocationController;
 use App\Http\Controllers\Inventory\Warehouse\WarehouseStockController;
 use App\Http\Controllers\Inventory\QualityControl\QualityControlController;
+use App\Http\Controllers\Inventory\TransaksiStokController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PermissionController;
 
 Route::prefix('v1')->group(function () {
 Route::get('/test-realtime', function () {
@@ -96,6 +101,28 @@ Route::get('/test-realtime', function () {
                     Route::post('/{qc}/reject', [QualityControlController::class, 'reject']);
                     Route::post('/{qc}/decision', [QualityControlDecisionController::class, 'decide']);
                 });
+
+                Route::get('/transaksi-stok', [TransaksiStokController::class, 'index']);
+                Route::get('/transaksi-stok/{id}', [TransaksiStokController::class, 'show']);
+            });
+            Route::prefix('employees')->group(function () {
+                Route::get('/', [EmployeeController::class, 'index']);
+                Route::get('/{id}', [EmployeeController::class, 'show']);
+            });
+
+            Route::prefix('users')->group(function () {
+                Route::get('/', [UserController::class, 'index']);
+                Route::get('/{id}', [UserController::class, 'show']);
+            });
+
+            Route::prefix('roles')->group(function () {
+                Route::get('/', [RoleController::class, 'index']);
+                Route::get('/{id}', [RoleController::class, 'show']);
+            });
+
+            Route::prefix('permissions')->group(function () {
+                Route::get('/', [PermissionController::class, 'index']);
+                Route::get('/{id}', [PermissionController::class, 'show']);
             });
     });
 });

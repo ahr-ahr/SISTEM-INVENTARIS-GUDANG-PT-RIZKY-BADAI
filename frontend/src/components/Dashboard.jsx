@@ -21,6 +21,26 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [showActiveOnly, setShowActiveOnly] = useState(true);
   const [toggleLoading, setToggleLoading] = useState({});
+  const [deleteReason, setDeleteReason] = useState('');
+const [showDeleteModal, setShowDeleteModal] = useState(false);
+const [barangToDelete, setBarangToDelete] = useState(null);
+const [transaksiList, setTransaksiList] = useState([]);
+const [selectedTransaksi, setSelectedTransaksi] = useState(null);
+const [showTransaksiDetail, setShowTransaksiDetail] = useState(false);
+// State untuk Laporan
+const [laporanType, setLaporanType] = useState('stok'); // 'stok' atau 'mutasi'
+const [laporanStok, setLaporanStok] = useState([]);
+const [laporanMutasi, setLaporanMutasi] = useState([]);
+const [filterLaporan, setFilterLaporan] = useState({
+  keyword: '',
+  stok_min: '',
+  stok_max: '',
+  barang_id: '',
+  jenis: '',
+  sumber: '',
+  tanggal_dari: '',
+  tanggal_sampai: ''
+});
   const [stats, setStats] = useState({
     totalKategori: 0,
     totalBarang: 0,
@@ -41,7 +61,6 @@ export default function Dashboard() {
     nama: '',
     category_id: '',
     satuan: '',
-    harga: '',
     stok_min: '',
     deskripsi: ''
   });
@@ -73,6 +92,23 @@ export default function Dashboard() {
     alasan: ''
   });
 
+  // Form data untuk transfer
+const [transferForm, setTransferForm] = useState({
+  warehouse_id: '',
+  barang_id: '',
+  from_location_id: '',
+  to_location_id: '',
+  jumlah: 1,
+  alasan: ''
+});
+
+const [transferList, setTransferList] = useState([]);
+const [selectedTransfer, setSelectedTransfer] = useState(null);
+const [showTransferDetail, setShowTransferDetail] = useState(false);
+const [showApprovalModal, setShowApprovalModal] = useState(false);
+const [approvalAction, setApprovalAction] = useState(''); // 'approve' atau 'reject'
+const [rejectionReason, setRejectionReason] = useState('');
+
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
@@ -95,8 +131,9 @@ export default function Dashboard() {
     fetchBarang();
     fetchSuppliers();
     fetchWarehouses();
-    // fetchLocations();
+    fetchTransaksi();
     fetchStats();
+    fetchLaporanStok();
   }, [location.state, navigate]);
 
   const fetchCategories = async () => {
@@ -222,6 +259,121 @@ export default function Dashboard() {
     }
   };
 
+  const fetchTransaksi = async () => {
+  try {
+    const { response, data } = await api.get('/inventory/transaksi-stok');
+    
+    if (data.success) {
+      if (Array.isArray(data.data)) {
+        setTransaksiList(data.data);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching transaksi:', error);
+    setTransaksiList([]);
+  }
+};
+
+const fetchTransaksiDetail = async (id) => {
+  try {
+    const { response, data } = await api.get(`/inventory/transaksi-stok/${id}`);
+    
+    if (data.success) {
+      setSelectedTransaksi(data.data);
+      setShowTransaksiDetail(true);
+    }
+  } catch (error) {
+    console.error('Error fetching transaksi detail:', error);
+    alert('Gagal memuat detail transaksi');
+  }
+};
+
+const fetchLaporanStok = async () => {
+  setLoading(true);
+  try {
+    const params = new URLSearchParams();
+    if (filterLaporan.keyword) params.append('keyword', filterLaporan.keyword);
+    if (filterLaporan.stok_min) params.append('stok_min', filterLaporan.stok_min);
+    if (filterLaporan.stok_max) params.append('stok_max', filterLaporan.stok_max);
+    
+    const { data } = await api.get(`/inventory/laporan/stok?${params.toString()}`);
+    
+    if (data.success) {
+      if (typeof data.data.items === 'string') {
+        const parsedItems = JSON.parse(data.data.items);
+        setLaporanStok(parsedItems);
+      } else if (Array.isArray(data.data.items)) {
+        setLaporanStok(data.data.items);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching laporan stok:', error);
+    setLaporanStok([]);
+  }
+  setLoading(false);
+};
+
+const fetchLaporanMutasi = async () => {
+  setLoading(true);
+  try {
+    const params = new URLSearchParams();
+    if (filterLaporan.barang_id) params.append('barang_id', filterLaporan.barang_id);
+    if (filterLaporan.jenis) params.append('jenis', filterLaporan.jenis);
+    if (filterLaporan.sumber) params.append('sumber', filterLaporan.sumber);
+    if (filterLaporan.tanggal_dari) params.append('tanggal_dari', filterLaporan.tanggal_dari);
+    if (filterLaporan.tanggal_sampai) params.append('tanggal_sampai', filterLaporan.tanggal_sampai);
+    
+    const { data } = await api.get(`/inventory/laporan/mutasi-stok?${params.toString()}`);
+    
+    if (data.success) {
+      if (typeof data.data.items === 'string') {
+        const parsedItems = JSON.parse(data.data.items);
+        setLaporanMutasi(parsedItems);
+      } else if (Array.isArray(data.data.items)) {
+        setLaporanMutasi(data.data.items);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching laporan mutasi:', error);
+    setLaporanMutasi([]);
+  }
+  setLoading(false);
+};
+
+const handleResetFilter = () => {
+  setFilterLaporan({
+    keyword: '',
+    stok_min: '',
+    stok_max: '',
+    barang_id: '',
+    jenis: '',
+    sumber: '',
+    tanggal_dari: '',
+    tanggal_sampai: ''
+  });
+};
+
+const getJenisTransaksiBadge = (jenis) => {
+  const badges = {
+    'masuk': 'bg-green-100 text-green-800',
+    'keluar': 'bg-red-100 text-red-800',
+    'penyesuaian': 'bg-orange-100 text-orange-800'
+  };
+  return badges[jenis] || 'bg-gray-100 text-gray-800';
+};
+
+const formatDateTime = (dateString) => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return date.toLocaleString('id-ID', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
@@ -298,16 +450,14 @@ export default function Dashboard() {
     }
   };
 
-  // Handler untuk menambah Barang
-  const handleCreateBarang = async (e) => {
+ const handleCreateBarang = async (e) => {
     e.preventDefault();
     try {
       const { data } = await api.post('/inventory/barangs', {
         kode: barangForm.kode,
         nama: barangForm.nama,
-        category_id: parseInt(barangForm.category_id),
+        category_id: barangForm.category_id, // ✅ Kirim sebagai string
         satuan: barangForm.satuan,
-        harga: parseFloat(barangForm.harga),
         stok_min: parseInt(barangForm.stok_min),
         deskripsi: barangForm.deskripsi || null
       });
@@ -410,13 +560,24 @@ export default function Dashboard() {
   // Handler untuk edit barang
 const handleUpdateBarang = async (e) => {
   e.preventDefault();
+  
+  // Gunakan identifier yang konsisten
+  const barangId = selectedBarang.barang_id || selectedBarang.id;
+  
+  console.log('Update Barang ID:', barangId);
+  console.log('Selected Barang:', selectedBarang);
+  
+  if (!barangId) {
+    alert('Error: ID barang tidak ditemukan');
+    return;
+  }
+  
   try {
-    const { response, data } = await api.put(`/inventory/barangs/${selectedBarang.barang_id}`, {
+    const { response, data } = await api.put(`/inventory/barangs/${barangId}`, {
       kode: barangForm.kode,
       nama: barangForm.nama,
-      category_id: parseInt(barangForm.category_id),
+      category_id: barangForm.category_id, // ✅ Kirim sebagai string
       satuan: barangForm.satuan,
-      harga: parseFloat(barangForm.harga),
       stok_min: parseInt(barangForm.stok_min),
       deskripsi: barangForm.deskripsi || null
     });
@@ -437,19 +598,34 @@ const handleUpdateBarang = async (e) => {
   }
 };
 
-  // Handler untuk nonaktifkan barang
 const handleDeleteBarang = async (barang) => {
-  if (!confirm(`Apakah Anda yakin ingin menonaktifkan barang "${barang.nama}"?`)) {
+  setBarangToDelete(barang);
+  setShowDeleteModal(true);
+};
+
+const confirmDeleteBarang = async () => {
+  if (!deleteReason) {
+    alert('Silakan pilih alasan penonaktifan');
+    return;
+  }
+
+  const barangId = barangToDelete.barang_id || barangToDelete.id;
+  
+  if (!barangId) {
+    alert('Error: ID barang tidak ditemukan');
     return;
   }
   
-  setToggleLoading(prev => ({ ...prev, [barang.barang_id]: true }));
+  setToggleLoading(prev => ({ ...prev, [barangId]: true }));
   
   try {
-    const { response, data } = await api.delete(`/inventory/barangs/${barang.barang_id}`);
+    const { response, data } = await api.delete(`/inventory/barangs/${barangId}?reason=${deleteReason}`);
     
     if (response.ok || data.success) {
       alert('Barang berhasil dinonaktifkan!');
+      setShowDeleteModal(false);
+      setDeleteReason('');
+      setBarangToDelete(null);
       fetchBarang();
       fetchStats();
     } else {
@@ -461,7 +637,7 @@ const handleDeleteBarang = async (barang) => {
   } finally {
     setToggleLoading(prev => {
       const newState = { ...prev };
-      delete newState[barang.barang_id];
+      delete newState[barangId];
       return newState;
     });
   }
@@ -503,7 +679,6 @@ const handleDeleteBarang = async (barang) => {
     nama: barang.nama,
     category_id: barang.category_id,
     satuan: barang.satuan,
-    harga: barang.harga,
     stok_min: barang.stok_min,
     deskripsi: barang.deskripsi || ''
   });
@@ -544,7 +719,6 @@ const handleDeleteBarang = async (barang) => {
       nama: '',
       category_id: '',
       satuan: '',
-      harga: '',
       stok_min: '',
       deskripsi: ''
     });
@@ -872,7 +1046,6 @@ const selectedBarangForAdjustment = getSelectedBarangInfo();
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Satuan</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Harga</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
               </tr>
@@ -909,11 +1082,6 @@ const selectedBarangForAdjustment = getSelectedBarangInfo();
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <span className="text-sm text-gray-600">{barang.satuan}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <span className="text-sm font-medium text-gray-900">
-                      Rp {parseFloat(barang.harga || 0).toLocaleString('id-ID')}
-                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -956,21 +1124,415 @@ const selectedBarangForAdjustment = getSelectedBarangInfo();
   );
 
       case 'transaksi':
-        return (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Data Transaksi</h3>
-            <p className="text-gray-600">Halaman Transaksi sedang dalam pengembangan...</p>
-          </div>
-        );
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-800">Data Transaksi Stok</h3>
+        <button 
+          onClick={fetchTransaksi}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span className="font-medium">Refresh</span>
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        </div>
+      ) : transaksiList.length === 0 ? (
+        <div className="text-center py-12">
+          <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p className="text-gray-500">Belum ada transaksi stok</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sumber</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stok Sebelum</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stok Sesudah</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {transaksiList.map((transaksi) => (
+                <tr key={transaksi.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm font-medium text-gray-900">#{transaksi.id}</span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm text-gray-600">{formatDateTime(transaksi.created_at)}</span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getJenisTransaksiBadge(transaksi.jenis)}`}>
+                      {transaksi.jenis}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm text-gray-900">{transaksi.sumber}</span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <span className={`text-sm font-semibold ${
+                      transaksi.jenis === 'masuk' 
+                        ? 'text-green-600' 
+                        : transaksi.jenis === 'keluar'
+                        ? 'text-red-600'
+                        : 'text-orange-600'
+                    }`}>
+                      {transaksi.jenis === 'masuk' ? '+' : transaksi.jenis === 'keluar' ? '-' : '±'}
+                      {transaksi.jumlah}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <span className="text-sm text-gray-600">{transaksi.stok_sebelum}</span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <span className="text-sm font-medium text-gray-900">{transaksi.stok_sesudah}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-600">{transaksi.keterangan || '-'}</span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <button 
+                      onClick={() => fetchTransaksiDetail(transaksi.id)}
+                      className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                    >
+                      Detail
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
 
       case 'laporan':
-        return (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Laporan</h3>
-            <p className="text-gray-600">Halaman Laporan sedang dalam pengembangan...</p>
-          </div>
-        );
+  return (
+    <div className="space-y-6">
+      {/* Tab Switcher */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setLaporanType('stok');
+              fetchLaporanStok();
+            }}
+            className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+              laporanType === 'stok'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Laporan Stok
+          </button>
+          <button
+            onClick={() => {
+              setLaporanType('mutasi');
+              fetchLaporanMutasi();
+            }}
+            className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+              laporanType === 'mutasi'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Laporan Mutasi Stok
+          </button>
+        </div>
+      </div>
 
+      {/* Filter Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Filter Laporan</h3>
+        
+        {laporanType === 'stok' ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Cari Barang</label>
+              <input
+                type="text"
+                value={filterLaporan.keyword}
+                onChange={(e) => setFilterLaporan({ ...filterLaporan, keyword: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                placeholder="Nama atau kode barang"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Stok Minimum</label>
+              <input
+                type="number"
+                min="0"
+                value={filterLaporan.stok_min}
+                onChange={(e) => setFilterLaporan({ ...filterLaporan, stok_min: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Stok Maksimum</label>
+              <input
+                type="number"
+                min="0"
+                value={filterLaporan.stok_max}
+                onChange={(e) => setFilterLaporan({ ...filterLaporan, stok_max: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                placeholder="1000"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Barang</label>
+              <select
+                value={filterLaporan.barang_id}
+                onChange={(e) => setFilterLaporan({ ...filterLaporan, barang_id: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              >
+                <option value="">Semua Barang</option>
+                {barangList.map((barang) => (
+                  <option key={barang.barang_id} value={barang.barang_id}>
+                    {barang.kode} - {barang.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Transaksi</label>
+              <select
+                value={filterLaporan.jenis}
+                onChange={(e) => setFilterLaporan({ ...filterLaporan, jenis: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              >
+                <option value="">Semua Jenis</option>
+                <option value="MASUK">Masuk</option>
+                <option value="KELUAR">Keluar</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sumber</label>
+              <input
+                type="text"
+                maxLength={50}
+                value={filterLaporan.sumber}
+                onChange={(e) => setFilterLaporan({ ...filterLaporan, sumber: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                placeholder="Sumber transaksi"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Dari</label>
+              <input
+                type="datetime-local"
+                value={filterLaporan.tanggal_dari}
+                onChange={(e) => setFilterLaporan({ ...filterLaporan, tanggal_dari: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Sampai</label>
+              <input
+                type="datetime-local"
+                value={filterLaporan.tanggal_sampai}
+                onChange={(e) => setFilterLaporan({ ...filterLaporan, tanggal_sampai: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              />
+            </div>
+          </div>
+        )}
+        
+        <div className="flex gap-3 mt-4">
+          <button
+            onClick={() => laporanType === 'stok' ? fetchLaporanStok() : fetchLaporanMutasi()}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Terapkan Filter
+          </button>
+          <button
+            onClick={handleResetFilter}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      {/* Data Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-800">
+            {laporanType === 'stok' ? 'Data Laporan Stok' : 'Data Laporan Mutasi Stok'}
+          </h3>
+          <button
+            onClick={() => laporanType === 'stok' ? fetchLaporanStok() : fetchLaporanMutasi()}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          </div>
+        ) : laporanType === 'stok' ? (
+          laporanStok.length === 0 ? (
+            <div className="text-center py-12">
+              <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-gray-500">Tidak ada data laporan stok</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Satuan</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stok Min</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {laporanStok.map((item, index) => (
+                    <tr key={index} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm font-medium text-gray-900">{item.kode}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-900">{item.nama}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-600">{item.category_nama || '-'}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className={`text-sm font-semibold ${
+                          item.stok < item.stok_min 
+                            ? 'text-red-600' 
+                            : item.stok < item.stok_min * 1.5 
+                            ? 'text-yellow-600' 
+                            : 'text-green-600'
+                        }`}>
+                          {item.stok || 0}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className="text-sm text-gray-600">{item.satuan}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className="text-sm text-gray-600">{item.stok_min}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          item.stok < item.stok_min 
+                            ? 'bg-red-100 text-red-800' 
+                            : item.stok < item.stok_min * 1.5 
+                            ? 'bg-yellow-100 text-yellow-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {item.stok < item.stok_min ? 'Kritis' : item.stok < item.stok_min * 1.5 ? 'Rendah' : 'Normal'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        ) : (
+          laporanMutasi.length === 0 ? (
+            <div className="text-center py-12">
+              <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-gray-500">Tidak ada data laporan mutasi stok</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barang</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sumber</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stok Sebelum</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stok Sesudah</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {laporanMutasi.map((item, index) => (
+                    <tr key={index} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-600">{formatDateTime(item.tanggal)}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{item.barang_nama}</div>
+                        <div className="text-xs text-gray-500">{item.barang_kode}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          item.jenis === 'MASUK' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {item.jenis}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-900">{item.sumber}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className={`text-sm font-semibold ${
+                          item.jenis === 'MASUK' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {item.jenis === 'MASUK' ? '+' : '-'}{item.jumlah}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className="text-sm text-gray-600">{item.stok_sebelum}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className="text-sm font-medium text-gray-900">{item.stok_sesudah}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-600">{item.keterangan || '-'}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  );
       default:
         return null;
     }
@@ -1132,6 +1694,204 @@ const selectedBarangForAdjustment = getSelectedBarangInfo();
       </div>
 
       {/* Modal */}
+      {/* Modal Delete Confirmation */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <div onClick={() => {
+              setShowDeleteModal(false);
+              setDeleteReason('');
+              setBarangToDelete(null);
+            }} className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" />
+            <div className="relative inline-block bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full">
+              <div className="bg-white px-6 pt-6 pb-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Nonaktifkan Barang</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Anda akan menonaktifkan: <span className="font-semibold">{barangToDelete?.nama}</span>
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Alasan Penonaktifan <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={deleteReason}
+                    onChange={(e) => setDeleteReason(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+                  >
+                    <option value="">-- Pilih Alasan --</option>
+                    <option value="rusak">Rusak</option>
+                    <option value="hilang">Hilang</option>
+                    <option value="obsolete">Obsolete</option>
+                    <option value="expired">Expired</option>
+                    <option value="salah_input">Salah Input</option>
+                  </select>
+                </div>
+
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
+                  <p className="text-sm text-amber-800">
+                    <strong>Perhatian:</strong> Barang yang dinonaktifkan tidak akan dapat digunakan dalam transaksi baru.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 px-6 py-4 flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeleteReason('');
+                    setBarangToDelete(null);
+                  }}
+                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={confirmDeleteBarang}
+                  disabled={!deleteReason}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Nonaktifkan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Detail Transaksi */}
+{showTransaksiDetail && selectedTransaksi && (
+  <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+      <div onClick={() => setShowTransaksiDetail(false)} className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" />
+      <div className="relative inline-block bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-2xl sm:w-full">
+        <div className="bg-white px-6 pt-6 pb-4">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-900">Detail Transaksi Stok</h3>
+            <button
+              onClick={() => setShowTransaksiDetail(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">ID Transaksi</label>
+                <p className="text-base font-semibold text-gray-900">#{selectedTransaksi.id}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Tanggal</label>
+                <p className="text-base text-gray-900">{formatDateTime(selectedTransaksi.created_at)}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Jenis Transaksi</label>
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getJenisTransaksiBadge(selectedTransaksi.jenis)}`}>
+                  {selectedTransaksi.jenis}
+                </span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Sumber</label>
+                <p className="text-base text-gray-900">{selectedTransaksi.sumber}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Jumlah</label>
+                <p className={`text-xl font-bold ${
+                  selectedTransaksi.jenis === 'masuk' 
+                    ? 'text-green-600' 
+                    : selectedTransaksi.jenis === 'keluar'
+                    ? 'text-red-600'
+                    : 'text-orange-600'
+                }`}>
+                  {selectedTransaksi.jenis === 'masuk' ? '+' : selectedTransaksi.jenis === 'keluar' ? '-' : '±'}
+                  {selectedTransaksi.jumlah}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Stok Sebelum</label>
+                <p className="text-xl font-bold text-gray-700">{selectedTransaksi.stok_sebelum}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Stok Sesudah</label>
+                <p className="text-xl font-bold text-gray-900">{selectedTransaksi.stok_sesudah}</p>
+              </div>
+            </div>
+
+            {selectedTransaksi.keterangan && (
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Keterangan</label>
+                <p className="text-base text-gray-900 bg-gray-50 p-3 rounded-lg">{selectedTransaksi.keterangan}</p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              {selectedTransaksi.barang_id && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">ID Barang</label>
+                  <p className="text-base text-gray-900">{selectedTransaksi.barang_id}</p>
+                </div>
+              )}
+              {selectedTransaksi.user_id && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">User ID</label>
+                  <p className="text-base text-gray-900">{selectedTransaksi.user_id}</p>
+                </div>
+              )}
+            </div>
+
+            {(selectedTransaksi.dispatch_id || selectedTransaksi.receiving_id || selectedTransaksi.adjustment_id) && (
+              <div className="border-t pt-4">
+                <label className="block text-sm font-medium text-gray-500 mb-2">Referensi</label>
+                <div className="space-y-2">
+                  {selectedTransaksi.dispatch_id && (
+                    <p className="text-sm text-gray-600">Dispatch ID: <span className="font-medium">{selectedTransaksi.dispatch_id}</span></p>
+                  )}
+                  {selectedTransaksi.receiving_id && (
+                    <p className="text-sm text-gray-600">Receiving ID: <span className="font-medium">{selectedTransaksi.receiving_id}</span></p>
+                  )}
+                  {selectedTransaksi.adjustment_id && (
+                    <p className="text-sm text-gray-600">Adjustment ID: <span className="font-medium">{selectedTransaksi.adjustment_id}</span></p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="bg-gray-50 px-6 py-4 flex justify-end">
+          <button
+            onClick={() => setShowTransaksiDetail(false)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
       {showModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
@@ -1251,7 +2011,7 @@ const selectedBarangForAdjustment = getSelectedBarangInfo();
                           ))}
                         </select>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4"> {/* UBAH dari grid-cols-2 */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Satuan <span className="text-red-500">*</span>
@@ -1264,21 +2024,6 @@ const selectedBarangForAdjustment = getSelectedBarangInfo();
                             onChange={(e) => setBarangForm({ ...barangForm, satuan: e.target.value })}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                             placeholder="Contoh: pcs, box, kg"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Harga <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="number"
-                            required
-                            min="0"
-                            step="0.01"
-                            value={barangForm.harga}
-                            onChange={(e) => setBarangForm({ ...barangForm, harga: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                            placeholder="0"
                           />
                         </div>
                       </div>
